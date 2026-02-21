@@ -19,7 +19,7 @@ export const signupLimiter = rateLimit({
     if (email) {
       return `signup:${String(email).toLowerCase()}`;
     }
-    return ipKeyGenerator(req as any);
+    return ipKeyGenerator(req.ip ?? '');
   },
 });
 
@@ -36,7 +36,7 @@ export const signinLimiter = rateLimit({
 
   skipSuccessfulRequests: true, // Only count failed attempts
 
-  keyGenerator: (req) => ipKeyGenerator(req as any),
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? ''),
 });
 
 export const forgotPasswordLimiter = rateLimit({
@@ -57,7 +57,7 @@ export const forgotPasswordLimiter = rateLimit({
     if (email) {
       return `forgot:${String(email).toLowerCase()}`;
     }
-    return ipKeyGenerator(req as any);
+    return ipKeyGenerator(req.ip ?? '');
   },
 });
 
@@ -73,8 +73,8 @@ export const apiLimiter = rateLimit({
 });
 
 export const emailVerificationLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, 
-  max: 3, 
+  windowMs: 60 * 60 * 1000,
+  max: 3,
   message: {
     success: false,
     message: 'Too many verification attempts, please try again later',
@@ -82,5 +82,5 @@ export const emailVerificationLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
-  keyGenerator: (req) => (req.query.token as string) || ipKeyGenerator(req as any),
+  keyGenerator: (req) => (req.query.token as string) || ipKeyGenerator(req.ip ?? ''),
 });

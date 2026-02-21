@@ -2,7 +2,7 @@ import prisma from '../config/database.js';
 import redis from '../config/redis.js';
 import { joseService } from '../services/jose.service.js';
 import { sessionService } from '../services/session.service.js';
-import { oauthService } from '../services/OAuth.service.js';
+import { oauthService } from '../services/oauth.service.js';
 import { AppError } from '../utils/appError.js';
 import { ErrorCode } from '../utils/errorCodes.js';
 import { AppCrypto } from '../utils/crypto.js';
@@ -10,6 +10,7 @@ import { COOKIE_NAMES, setSessionCookies } from '../utils/cookies.js';
 import { CRYPTO_ALGORITHMS } from '../utils/constant.js';
 import type { Role, Scope } from '../utils/constant.js';
 import type { Request, Response, NextFunction } from 'express';
+import type { AuthenticationFlow } from '../services/auth.service.js';
 
 /**
  * AUTHENTICATE
@@ -19,82 +20,70 @@ import type { Request, Response, NextFunction } from 'express';
  *
  * AUTHORIZE
  *  1. role: validate user for all the roles required (USER, DEVELOPER, ADMIN)
+ *  2. clientOwnership: validate is client belong to user or not
  */
 
 export class Authentication {
   private static activeSession_RK = (sid: string) => `session:active:${sid}`;
 
-  static async api(req: Request, _res: Response, next: NextFunction): Promise<void> {
-    try {
-      const asid = req.signedCookies[COOKIE_NAMES.ACTIVE_SESSION];
+  private constructor() {}
 
-      if (!asid) {
-        throw new AppError('Access session expired', 401, ErrorCode.ACTIVE_SESSION_EXPIRED);
-      }
+  static ssr = (flow: AuthenticationFlow = 'default') => {
+    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const asid = req.signedCookies[COOKIE_NAMES.ACTIVE_SESSION];
+        const isid = req.signedCookies[COOKIE_NAMES.IDENTITY_SESSION];
 
-      const cached = await redis.get(
-        Authentication.activeSession_RK(AppCrypto.hash(asid, CRYPTO_ALGORITHMS.sha256, 'hex')),
-      );
+        // Try Active Session
+        if (asid) {
+          const hashedAsid = AppCrypto.hash(asid, CRYPTO_ALGORITHMS.sha256, 'hex');
 
-      if (!cached) {
-        throw new AppError('Invalid session', 401, ErrorCode.UNAUTHORIZED);
-      }
+          const cached = await redis.get(Authentication.activeSession_RK(hashedAsid));
 
-      const { userId, roles, createdAt } = JSON.parse(cached);
+          if (cached) {
+            const { userId, roles, createdAt } = JSON.parse(cached);
 
-      // verify
-      if (!userId || !roles || !createdAt) {
-        throw new AppError('Corrupted session', 401, ErrorCode.UNAUTHORIZED);
-      }
-
-      req.user = { id: userId, roles };
-
-      return next();
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async ssr(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const asid = req.signedCookies[COOKIE_NAMES.ACTIVE_SESSION];
-      const isid = req.signedCookies[COOKIE_NAMES.IDENTITY_SESSION];
-
-      // Check for valid Active Session
-      if (asid) {
-        const cached = await redis.get(
-          Authentication.activeSession_RK(AppCrypto.hash(asid, CRYPTO_ALGORITHMS.sha256, 'hex')),
-        );
-
-        if (cached) {
-          const { userId, roles, createdAt } = JSON.parse(cached);
-
-          if (userId && roles && createdAt) {
-            req.user = { id: userId, roles };
-            return next();
+            if (userId && roles && createdAt) {
+              req.user = { id: userId, roles };
+              return next();
+            }
           }
         }
+
+        // Fallback -> Refresh using Identity Session
+        if (isid) {
+          const data = await sessionService.refreshActiveSession(isid);
+
+          await setSessionCookies(res, null, data.activeSessId);
+
+          req.user = {
+            id: data.userId,
+            roles: data.roles,
+          };
+
+          return next();
+        }
+
+        // No valid session
+        if (flow === 'oauth') {
+          const requestId = req.requestId;
+
+          const params = new URLSearchParams({
+            flow: 'oauth',
+            error: 'Session_expired',
+          });
+
+          if (requestId) params.set('request_id', requestId);
+
+          return res.redirect(303, `/signin?${params.toString()}`);
+        }
+
+        return res.redirect(303, '/signin?error=Session_expired');
+      } catch (error) {
+        return next(error);
       }
-
-      // fall through → try refresh
-      if (isid) {
-        const data = await sessionService.refreshActiveSession(isid);
-
-        await setSessionCookies(res, null, data.activeSessId);
-
-        req.user = {
-          id: data.userId,
-          roles: data.roles,
-        };
-
-        return next();
-      }
-
-      return res.redirect('/signin?error=Session expired');
-    } catch (error) {
-      return res.redirect('/signin?error=Authentication failed');
-    }
-  }
+    };
+  };
 
   static async client(req: Request, _res: Response, next: NextFunction): Promise<void> {
     try {
@@ -154,7 +143,7 @@ export class Authorize {
     const client = await prisma.oAuthClient.findFirst({
       where: {
         id: clientId,
-        userId: req.user!.id,
+        userId: req.user.id,
       },
     });
 

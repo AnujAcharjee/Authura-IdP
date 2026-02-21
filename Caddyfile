@@ -1,8 +1,8 @@
-authura.anujacharjee.com {
+pramaan.anujacharjee.com {
 
   encode gzip zstd
 
-  reverse_proxy authura-authura-1:8080 {
+  reverse_proxy pramaan-pramaan-1:8080 {
     transport http {
       read_timeout 30s
       write_timeout 30s

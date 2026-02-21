@@ -32,7 +32,13 @@ export class AccountZSchema {
 
   static changePasswordSchema = z.object({
     body: z.object({
-      email: UtilFields.emailField,
+      email: UtilFields.emailField.optional(),
+    }),
+  });
+
+  static updateConsentSchema = z.object({
+    body: z.object({
+      client_id: z.string({ message: 'client_id must be a string' }).min(1, 'client_id is required'),
     }),
   });
 }

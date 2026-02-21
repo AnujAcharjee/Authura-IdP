@@ -45,7 +45,7 @@ export const logger = winston.createLogger({
 export const requestLogger = winston.createLogger({
   format: formatConfig,
   transports: [
-    new (DailyRotateFile as any)({
+    new DailyRotateFile({
       filename: 'logs/requests-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       maxSize: '20m',

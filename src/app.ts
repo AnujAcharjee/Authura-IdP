@@ -11,12 +11,8 @@ import { loggingMiddleware } from './middlewares/loggingMiddleware.js';
 import { setupSecurityHeaders } from './middlewares/securityHeaders.js';
 import { ensureRequestId } from './middlewares/requestId.js';
 import { apiLimiter } from './middlewares/rateLimiter.js';
-import authRoutes from './routes/api/auth.api.routes.js';
-import oauthRoutes from './routes/api/OAuth.api.routes.js';
-import clientRoutes from './routes/api/client.api.routes.js';
-import userRoutes from './routes/api/account.api.routes.js';
-import emailRedirectRoutes from './routes/ui/emailRedirect.routes.js';
-import pagesRoutes from './routes/ui/ui.routes.js';
+import oauthRouter from './routes/oauth.routes.js';
+import uiRouter from './routes/ui.routes.js';
 
 const app = express();
 
@@ -64,15 +60,9 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-// Pages (ejs)
-app.use('/', pagesRoutes);
-app.use('/email', emailRedirectRoutes);
-app.use('/auth', authRoutes);
-
-// API 
-app.use('/api/v1/oauth', oauthRoutes);
-app.use('/api/v1/client', clientRoutes);
-app.use('/api/v1/account', userRoutes);
+// Routes
+app.use('/', uiRouter);
+app.use('/', oauthRouter);
 
 // 404 handler
 app.use(notFoundHandler);

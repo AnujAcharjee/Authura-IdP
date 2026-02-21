@@ -10,12 +10,12 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - authura
+      - pramaan
     networks:
-      - authura-network
+      - pramaan-network
 
-  authura:
-    image: anuj304/authura:1.0.0
+  pramaan:
+    image: anuj304/pramaan:1.0.0
     restart: unless-stopped
     env_file:
       - .env
@@ -25,7 +25,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - authura-network
+      - pramaan-network
 
   redis:
     image: redis:8.4.0
@@ -44,7 +44,7 @@ services:
       timeout: 3s
       retries: 5
     networks:
-      - authura-network
+      - pramaan-network
 
 volumes:
   redis-data:
@@ -52,5 +52,5 @@ volumes:
   caddy_config:
 
 networks:
-  authura-network:
+  pramaan-network:
     driver: bridge

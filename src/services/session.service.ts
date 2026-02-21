@@ -1,6 +1,7 @@
 import redis from '../config/redis.js';
 import { ENV } from '../config/env.js';
 import prisma from '../config/database.js';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { AppCrypto } from '../utils/crypto.js';
 import { AppError } from '../utils/appError.js';
 import { ErrorCode } from '../utils/errorCodes.js';
@@ -49,13 +50,13 @@ export class SessionService {
         });
 
         return isid;
-      } catch (err: any) {
+      } catch (error: unknown) {
         // Prisma unique constraint violation
-        if (err.code === 'P2002') {
+        if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
           continue; // retry with a new token
         }
 
-        throw err;
+        throw error;
       }
     }
 
@@ -122,6 +123,7 @@ export class SessionService {
             roles: true,
             isActive: true,
             isLocked: true,
+            lockedUntil: true,
           },
         },
       },
@@ -137,7 +139,14 @@ export class SessionService {
     }
 
     if (session.user.isLocked) {
-      throw new AppError('Account is locked. Try again later.', 423, ErrorCode.ACCOUNT_LOCKED);
+      if (session.user.lockedUntil && session.user.lockedUntil.getTime() <= Date.now()) {
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: { isLocked: false, lockedUntil: null },
+        });
+      } else {
+        throw new AppError('Account is locked. Try again later.', 423, ErrorCode.ACCOUNT_LOCKED);
+      }
     }
 
     if (session.revoked || session.expiresAt.getTime() < Date.now()) {

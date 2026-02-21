@@ -9,7 +9,7 @@ export const setupSecurityHeaders = (app: Express) => {
   app.use(
     helmet({
       /* -------- Content Security Policy -------- */
-      
+
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"], // block all external resources by default
@@ -19,26 +19,27 @@ export const setupSecurityHeaders = (app: Express) => {
           imgSrc: ["'self'", 'data:', 'https:'], // allow avatars, logos, QR codes
           fontSrc: ["'self'", 'https:', 'data:'], // allow embedded web fonts
 
-          connectSrc: ["'self'"], // restrict XHR / fetch / OAuth calls
+          connectSrc: ["'self'", "https:"], // restrict XHR / fetch / OAuth calls
 
           objectSrc: ["'none'"], // block Flash, plugins, embeds
-
           frameAncestors: ["'none'"], // prevent clickjacking
-          formAction: ["'self'"], // prevent form submission hijacking
           baseUri: ["'self'"],
-          scriptSrcAttr: ["'none'"],
+
+          // TODO: further restrict formAction to specific trusted domains (e.g. client app URLs) after development
+          // formAction: ["'self'", "https://*.pramaan.aunjacharjee.com"],
 
           ...(ENV.NODE_ENV === 'production' ?
-            { upgradeInsecureRequests: [] } // force HTTPS in production
-          : {}),
+            {
+              upgradeInsecureRequests: [], // force HTTPS in production
+              formAction: ["'self'", 'https:'], // prevent form submission hijacking
+            }
+          : { formAction: ["'self'", 'http:', 'https:'] }),
         },
       },
 
       /* -------- Cross-origin isolation -------- */
 
       crossOriginEmbedderPolicy: false, // required for OAuth redirects & Swagger
-      crossOriginOpenerPolicy: { policy: 'same-origin' }, // isolate browsing context
-      crossOriginResourcePolicy: { policy: 'same-origin' }, // block cross-origin loads
 
       /* -------- Other protections -------- */
 

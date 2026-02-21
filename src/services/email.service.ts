@@ -7,6 +7,7 @@ import {
   getPasswordResetEmailTemplate,
   getSignInVerificationTemplate,
 } from '../templates/email/index.js';
+import { AuthenticationFlow } from './auth.service.js';
 
 class EmailService {
   private transporter!: nodemailer.Transporter;
@@ -20,7 +21,7 @@ class EmailService {
       host: ENV.SMTP_HOST,
     });
 
-    this.fromAddress = ENV.SMTP_FROM ?? 'authura@localhost';
+    this.fromAddress = ENV.SMTP_FROM ?? 'pramaan@localhost';
     this.precompileTemplates();
   }
 
@@ -107,15 +108,24 @@ class EmailService {
     }
   }
 
-  async sendVerificationEmail(to: string, name: string, verificationToken: string): Promise<void> {
-    const verificationUrl = `${SERVER_URL}/email/verify?token=${encodeURIComponent(verificationToken)}`;
+  async sendVerificationEmail(
+    to: string,
+    name: string,
+    verificationToken: string,
+    flow: AuthenticationFlow,
+    requestId?: string,
+  ): Promise<void> {
+    const verificationUrl = new URL(`${SERVER_URL}/email/verify`);
+    verificationUrl.searchParams.append('token', verificationToken);
+    if (flow === 'oauth') verificationUrl.searchParams.append('flow', flow);
+    if (flow === 'oauth' && requestId) verificationUrl.searchParams.append('request_id', requestId);
 
     try {
       const info = await this.transporter.sendMail({
         from: this.fromAddress,
         to,
         subject: 'Verify your email address',
-        html: getEmailVerificationTemplate(name, verificationUrl),
+        html: getEmailVerificationTemplate(name, verificationUrl.toString()),
       });
 
       logger.info('Verification email sent', {
@@ -134,15 +144,24 @@ class EmailService {
     }
   }
 
-  async sendSignInVerifyEmail(to: string, name: string, verificationToken: string): Promise<void> {
-    const verificationUrl = `${SERVER_URL}/email/signin?token=${encodeURIComponent(verificationToken)}`;
+  async sendSignInVerifyEmail(
+    to: string,
+    name: string,
+    verificationToken: string,
+    flow: AuthenticationFlow,
+    requestId?: string,
+  ): Promise<void> {
+    const verificationUrl = new URL(`${SERVER_URL}/signin/verify`);
+    verificationUrl.searchParams.append('token', verificationToken);
+    if (flow === 'oauth') verificationUrl.searchParams.append('flow', flow);
+    if (flow === 'oauth' && requestId) verificationUrl.searchParams.append('request_id', requestId);
 
     try {
       const info = await this.transporter.sendMail({
         from: this.fromAddress,
         to,
         subject: 'Verify your email address',
-        html: getSignInVerificationTemplate(name, verificationUrl),
+        html: getSignInVerificationTemplate(name, verificationUrl.toString()),
       });
 
       logger.info('Sign-in verification email sent', {
@@ -161,15 +180,24 @@ class EmailService {
     }
   }
 
-  async sendPasswordResetEmail(to: string, name: string, resetToken: string): Promise<void> {
-    const resetUrl = `${SERVER_URL}/reset-password?token=${encodeURIComponent(resetToken)}`;
+  async sendPasswordResetEmail(
+    to: string,
+    name: string,
+    resetToken: string,
+    flow: AuthenticationFlow,
+    requestId?: string,
+  ): Promise<void> {
+    const resetUrl = new URL(`${SERVER_URL}/reset-password`);
+    resetUrl.searchParams.append('token', resetToken);
+    if (flow === 'oauth') resetUrl.searchParams.append('flow', flow);
+    if (flow === 'oauth' && requestId) resetUrl.searchParams.append('request_id', requestId);
 
     try {
       const info = await this.transporter.sendMail({
         from: this.fromAddress,
         to,
         subject: 'Reset Your Password',
-        html: getPasswordResetEmailTemplate(name, resetUrl),
+        html: getPasswordResetEmailTemplate(name, resetUrl.toString()),
       });
 
       logger.info('Password reset email sent', {

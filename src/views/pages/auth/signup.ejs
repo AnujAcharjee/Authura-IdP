@@ -1,18 +1,33 @@
 <% layout("layouts/main") %>
 
+<% 
+  const _flow = flow ?? 'default';
+%>
+
 <div class="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4">
   <div class="w-full max-w-md">
     <!-- Main Card -->
     <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/60 p-8 sm:p-10">
 
-      <%- include("../../partials/auth/header", {
-        title: "Create your account",
-        subtitle: "Get started with Authura and secure your applications today."
+      <%- include("../../partials/form/header", {
+        title: "Create account",
+        // subtitle: "Get started with Pramaan. Sign up to create your secure identity."
       }) %>
 
-      <%- include("../../partials/auth/alert", {success, error}) %>
+      <%- include("../../partials/alert", {success, error}) %>
 
-      <form method="POST" action="/auth/signup" class="space-y-5">
+      <% if (success === "Sign-in verification email has been sent to the registered email address") { %>
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900">
+        Check your email for the email verification link to complete sign up.
+      </div>
+      <% } else { %>
+      <form method="POST" action="/signup" class="space-y-5">
+
+        <input type="hidden" name="flow" value=<%= _flow %> />
+
+        <% if (_flow === 'oauth') { %>
+        <input type="hidden" name="request_id" value="<%= requestId %>" />
+        <% } %>
 
         <%- include("../../partials/form/input", {
           id: "email",
@@ -54,7 +69,10 @@
           required: true,
           autocomplete: "new-password",
           placeholder: "••••••••",
-          helperText: "Must be at least 8 characters, with upper & lower case, a number, and a symbol"
+          minlength: 8,
+          maxlength: 100,
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,100}$',
+          helperText: "Must be at least 8 characters, with upper and lower case, a number, and a special character"
         }) %>
 
         <%- include("../../partials/form/input", {
@@ -64,27 +82,27 @@
           label: "Confirm password",
           required: true,
           autocomplete: "new-password",
-          placeholder: "••••••••"
+          placeholder: "••••••••",
+          minlength: 8,
+          maxlength: 100,
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,100}$',
         }) %>
 
-        <div class="pt-2">
-          <%- include("../../partials/form/button", {
-            type: "submit",
-            text: "Create account",
-            variant: "secondary",
-            fullWidth: true,
-            size: "lg"
-          }) %>
-        </div>
+        <button type="submit" class="btn-orange w-full">
+          Sign up
+        </button>
 
       </form>
 
-      <%- include("../../partials/auth/footer", {
+      <%- include("../../partials/form/footer", {
         text: "Already have an account?",
-        href: "/signin",
+        href: flow === "oauth"
+          ? `/signin?flow=oauth&request_id=${encodeURIComponent(requestId)}`
+          : "/signin",
         linkText: "Sign in"
       }) %>
 
+      <% } %>
     </div>
 
     <!-- Trust Indicator -->

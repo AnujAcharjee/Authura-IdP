@@ -15,7 +15,8 @@ async function init() {
 
   await joseService.initJwks();
 
-  server = app.listen(ENV.PORT, '0.0.0.0', () => {
+  // TODO: '0.0.0.0'
+  server = app.listen(ENV.PORT,  () => {
     logger.info(`Server running on port ${ENV.PORT} in ${ENV.NODE_ENV} mode`);
   });
 }
@@ -26,7 +27,7 @@ init().catch((error) => {
 });
 
 // Graceful shutdown
-const shutdown = async (signal: string) => {
+const shutdown = async () => {
   if (isShuttingDown) return;
   isShuttingDown = true;
 

@@ -7,4 +7,5 @@ This documentation explains how to:
 - Create OAuth clients
 - Authenticate users using OIDC
 - Exchange authorization codes for tokens
+
 - Create application sessions securely

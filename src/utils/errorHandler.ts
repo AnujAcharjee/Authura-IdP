@@ -4,6 +4,8 @@ import { logger } from '../config/logger.js';
 import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/client.js';
 
 export class ErrorHandler {
+  private constructor() {}
+
   static handle(error: unknown, context: string) {
     // handel Prisma errors
     if (error instanceof PrismaClientKnownRequestError) {

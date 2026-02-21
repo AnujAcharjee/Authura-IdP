@@ -16,6 +16,21 @@ import {
   type Gender,
 } from '../utils/constant.js';
 
+export type AuthenticationFlow = 'oauth' | 'default';
+
+export type UserView = {
+  id: string;
+  name: string;
+  email: string;
+  roles: Role[];
+  isEmailVerified: boolean;
+  password: string | null;
+  mfaEnabled: boolean;
+  isLocked: boolean;
+  lockedUntil: Date | null;
+  isActive: boolean;
+};
+
 export class AuthService {
   private readonly emailVerificationTokenExpiry =
     ENV.NODE_ENV === 'production' ? ENV.EMAIL_VERIFICATION_TOKEN_EX : 24 * 60 * 60;
@@ -52,141 +67,72 @@ export class AuthService {
     await redis.multi().del(tokenKey).del(userKey).exec();
   }
 
-  // SIGNUP
-  async signup(input: { name: string; email: string; gender: Gender; password: string }): Promise<{
-    id: string;
-    email: string;
-    name: string;
-    roles: Role[];
-    createdAt: Date;
-  }> {
-    const { name, email, gender, password } = input;
+  private async unlockIfExpired(user: { id: string; isLocked: boolean; lockedUntil: Date | null }) {
+    if (!user.isLocked) return;
 
-    const isExistingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-    if (isExistingUser) {
-      throw new AppError('Email already exists', 400, ErrorCode.ALREADY_EXISTS);
+    if (user.lockedUntil && user.lockedUntil.getTime() <= Date.now()) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isLocked: false, lockedUntil: null },
+      });
+      user.isLocked = false;
+      user.lockedUntil = null;
+    }
+  }
+
+  private async validateUser(params: { id?: string; email?: string }): Promise<UserView> {
+    const whereClause =
+      params.id ? { id: params.id }
+      : params.email ? { email: params.email }
+      : undefined;
+
+    if (!whereClause) {
+      throw new AppError('Either id or email must be provided', 500, ErrorCode.INTERNAL_SERVER_ERROR, false);
     }
 
-    if (!Object.values(GENDERS).includes(gender)) {
-      throw new AppError('Invalid gender value', 400, ErrorCode.INVALID_REQUEST);
-    }
-
-    const hashPassword = await bcrypt.hash(password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        name,
-        gender,
-        email,
-        password: hashPassword,
-        roles: [ROLES.USER],
-        provider: AUTH_PROVIDERS.DEFAULT,
-      },
+    const user = await prisma.user.findUnique({
+      where: whereClause,
       select: {
         id: true,
-        email: true,
         name: true,
+        email: true,
         roles: true,
-        createdAt: true,
+        password: true,
+        mfaEnabled: true,
+        isEmailVerified: true,
+        isLocked: true,
+        lockedUntil: true,
+        isActive: true,
       },
     });
 
-    const verificationToken = AppCrypto.randomToken(32);
-    const hashedVerificationToken = AppCrypto.hash(verificationToken, CRYPTO_ALGORITHMS.sha256, 'hex');
+    if (!user) {
+      throw new AppError('Unauthorized', 404, ErrorCode.UNAUTHORIZED);
+    }
 
-    await this.setVerificationTokenInRedis(hashedVerificationToken, user.id, user.roles);
+    if (user.isLocked) {
+      await this.unlockIfExpired(user);
+      if (user.isLocked) {
+        throw new AppError(`Account locked until: ${user.lockedUntil}`, 403, ErrorCode.ACCOUNT_LOCKED);
+      }
+    }
 
-    // Send email verification email
-    emailService.sendVerificationEmail(email, name, verificationToken);
+    if (user.isActive && !user.isEmailVerified) {
+      throw new AppError('Email is not verified', 403, ErrorCode.EMAIL_NOT_VERIFIED);
+    }
+
+    if (!user.isActive && !user.isEmailVerified) {
+      throw new AppError('Email is not verified', 403, ErrorCode.EMAIL_NOT_VERIFIED);
+    }
+
+    if (!user.isActive && user.isEmailVerified) {
+      throw new AppError('User inactive', 403, ErrorCode.USER_INACTIVE);
+    }
 
     return user;
   }
 
-  // VERIFY EMAIL
-  async verifyEmail(token: string): Promise<{
-    identitySessionId: string;
-    activeSessionId: string;
-  }> {
-    const hashedToken = AppCrypto.hash(token, CRYPTO_ALGORITHMS.sha256, 'hex');
-
-    const cached = await redis.get(this.emailVerificationTokenKey(hashedToken));
-    if (!cached) {
-      throw new AppError('Invalid or expired verification token', 400, ErrorCode.INVALID_TOKEN);
-    }
-
-    const { userId, roles } = JSON.parse(cached);
-
-    const updated = await prisma.user.updateMany({
-      where: {
-        id: userId,
-        isEmailVerified: false,
-      },
-      data: {
-        isEmailVerified: true,
-        emailVerifiedAt: new Date(),
-      },
-    });
-
-    // delete tokens
-    const userKey = this.emailVerificationUserKey(userId);
-    const tokenKey = this.emailVerificationTokenKey(hashedToken);
-    await this.delVerificationTokenInRedis(tokenKey, userKey);
-
-    if (updated.count === 0) {
-      throw new AppError('Email already verified', 400, ErrorCode.INVALID_TOKEN);
-    }
-
-    // create session
-    const identitySessionId = await sessionService.createIdentitySession(userId);
-    const activeSessionId = await sessionService.createActiveSession(userId, roles);
-
-    return { identitySessionId, activeSessionId };
-  }
-
-  // RESEND VERIFICATION EMAIL
-  async resendVerificationEmail(email: string): Promise<void> {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        isEmailVerified: true,
-        email: true,
-        name: true,
-        roles: true,
-      },
-    });
-
-    if (!user || user.isEmailVerified) {
-      return;
-    }
-
-    const userKey = this.emailVerificationUserKey(user.id);
-    const existingToken = await redis.get(userKey);
-
-    if (existingToken) {
-      const tokenKey = this.emailVerificationTokenKey(existingToken);
-      this.delVerificationTokenInRedis(tokenKey, userKey);
-    }
-
-    const verificationToken = AppCrypto.randomToken(32);
-    const hashedVerificationToken = AppCrypto.hash(verificationToken, CRYPTO_ALGORITHMS.sha256, 'hex');
-
-    await this.setVerificationTokenInRedis(hashedVerificationToken, user.id, user.roles);
-
-    // Send email verification email
-    emailService.sendVerificationEmail(user.email, user.name, verificationToken);
-  }
-
-  // SIGNIN
-  async signin(input: { email: string; password: string }): Promise<{
-    id: string;
-    email: string;
-    mfaEnabled: boolean;
-    identitySessionId: string | undefined;
-    activeSessionId: string | undefined;
-  }> {
-    const { email, password } = input;
-
+  private async validateUserForResend(email: string): Promise<UserView> {
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
@@ -199,169 +145,254 @@ export class AuthService {
         isEmailVerified: true,
         isLocked: true,
         lockedUntil: true,
-      },
-    });
-
-    if (!user || !user.password) {
-      throw new AppError('Invalid credentials', 401, ErrorCode.INVALID_CREDENTIALS);
-    }
-
-    // ----------------------- Check if email verified or not -----------------------
-
-    if (!user.isEmailVerified) {
-      throw new AppError('Please verify your email before signing in', 403, ErrorCode.EMAIL_NOT_VERIFIED);
-    }
-
-    // ----------------------- Handel locked user -----------------------
-
-    if (user.isLocked) {
-      if (user.lockedUntil && user.lockedUntil > new Date()) {
-        throw new AppError(
-          `Account is locked until ${user.lockedUntil.toISOString()}`,
-          423,
-          ErrorCode.ACCOUNT_LOCKED,
-        );
-      }
-
-      // auto-unlock if lock expired
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          isLocked: false,
-          lockedUntil: null,
-        },
-      });
-    }
-
-    // ----------------------- Handle password validation -----------------------
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    // ----------------------- if invalid password -----------------------
-    // increase failed login count
-    // if exceed limit lock  user
-
-    let identitySessionId: string | undefined = undefined;
-    let activeSessionId: string | undefined = undefined;
-
-    const failureCountKey = this.signinFailCountKey(user.id);
-
-    if (!isPasswordValid) {
-      const failureCount = await redis.incr(failureCountKey);
-
-      if (failureCount === 1) {
-        await redis.expire(failureCountKey, this.signinFailCountExpiry);
-      }
-
-      if (failureCount >= this.maxSigninFailures) {
-        // Lock account
-        const lockedUntil = new Date(Date.now() + this.signinLockUntil * 1000);
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            isLocked: true,
-            lockedUntil,
-          },
-        });
-
-        // delete failureCount
-        await redis.del(failureCountKey);
-
-        // send account locked email
-      }
-
-      throw new AppError('Invalid credentials', 401, ErrorCode.INVALID_CREDENTIALS);
-    }
-
-    // ----------------------- if valid password -----------------------
-    // delete failure count from redis
-
-    await redis.del(failureCountKey);
-
-    // ----------------------- if mfa enabled - send email, else create new session -----------------------
-
-    if (user.mfaEnabled) {
-      const verificationToken = AppCrypto.randomToken(32);
-      const hashedVerificationToken = AppCrypto.hash(verificationToken, CRYPTO_ALGORITHMS.sha256, 'hex');
-
-      await redis.set(
-        this.signinVerificationTokenKey(hashedVerificationToken),
-        user.id,
-        'EX',
-        this.signinVerificationTokenExpiry,
-      );
-
-      emailService.sendSignInVerifyEmail(user.email, user.name, verificationToken);
-    } else {
-      // create session
-      identitySessionId = await sessionService.createIdentitySession(user.id);
-      activeSessionId = await sessionService.createActiveSession(user.id, user.roles);
-
-      if (!identitySessionId || !activeSessionId) {
-        throw new AppError(
-          'Identity & Active session ids are null',
-          500,
-          ErrorCode.INTERNAL_SERVER_ERROR,
-          false,
-        );
-      }
-    }
-
-    return {
-      id: user.id,
-      email,
-      mfaEnabled: user.mfaEnabled,
-      identitySessionId,
-      activeSessionId,
-    };
-  }
-
-  // VERIFY SIGNIN MFA
-  async verifySignIn(token: string): Promise<{
-    id: string;
-    email: string;
-    identitySessionId: string;
-    activeSessionId: string;
-  }> {
-    const hashedToken = AppCrypto.hash(token, CRYPTO_ALGORITHMS.sha256, 'hex');
-    const key = this.signinVerificationTokenKey(hashedToken);
-
-    const userId = await redis.get(key);
-
-    if (!userId) {
-      throw new AppError('Invalid or expired verification token', 400, ErrorCode.INVALID_TOKEN);
-    }
-
-    // delete token
-    await redis.del(key);
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        roles: true,
+        isActive: true,
       },
     });
 
     if (!user) {
-      throw new AppError('Invalid user id', 401, ErrorCode.INVALID_CREDENTIALS);
+      throw new AppError('Unauthorized', 400, ErrorCode.UNAUTHORIZED);
     }
 
-    // create Session
-    const identitySessionId = await sessionService.createIdentitySession(user.id);
-    const activeSessionId = await sessionService.createActiveSession(user.id, user.roles);
+    if (user.isLocked) {
+      await this.unlockIfExpired(user);
+      if (user.isLocked) {
+        throw new AppError(`Account locked until: ${user.lockedUntil}`, 403, ErrorCode.ACCOUNT_LOCKED);
+      }
+    }
+
+    if (user.isActive && !user.isEmailVerified) {
+      // allow resend for active-but-unverified users
+      return user;
+    }
+
+    if (!user.isActive && !user.isEmailVerified) {
+      // allow resend for inactive-unverified users
+      return user;
+    }
+
+    if (!user.isActive && user.isEmailVerified) {
+      throw new AppError('User inactive', 403, ErrorCode.USER_INACTIVE);
+    }
+
+    throw new AppError('Email already verified', 409, ErrorCode.INVALID_REQUEST);
+  }
+
+  // ----------------------- SIGNUP -----------------------
+
+  async signup(input: {
+    name: string;
+    email: string;
+    gender: Gender;
+    password: string;
+    flow: AuthenticationFlow;
+    requestId?: string;
+  }) {
+    const { name, email, gender, password, flow } = input;
+
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+
+    if (existing) {
+      throw new AppError('Email already exists', 409, ErrorCode.EMAIL_ALREADY_EXISTS);
+    }
+
+    if (!Object.values(GENDERS).includes(gender)) {
+      throw new AppError('Invalid gender', 400, ErrorCode.INVALID_GENDER);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        gender,
+        email,
+        password: hashedPassword,
+        roles: [ROLES.USER],
+        provider: AUTH_PROVIDERS.DEFAULT,
+        isActive: false,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        roles: true,
+        createdAt: true,
+      },
+    });
+
+    const token = AppCrypto.randomToken(32);
+    const hashedToken = AppCrypto.hash(token, CRYPTO_ALGORITHMS.sha256, 'hex');
+
+    await this.setVerificationTokenInRedis(hashedToken, user.id, user.roles);
+
+    await emailService.sendVerificationEmail(email, name, token, flow, input.requestId);
+
+    return user;
+  }
+
+  async verifyEmail(token: string) {
+    const hashedToken = AppCrypto.hash(token, CRYPTO_ALGORITHMS.sha256, 'hex');
+
+    const cached = await redis.get(this.emailVerificationTokenKey(hashedToken));
+    if (!cached) {
+      throw new AppError('Invalid or expired verification token', 400, ErrorCode.INVALID_VERIFICATION_TOKEN);
+    }
+
+    const { userId, roles } = JSON.parse(cached);
+
+    const updated = await prisma.user.updateMany({
+      where: { id: userId, isEmailVerified: false },
+      data: {
+        isEmailVerified: true,
+        emailVerifiedAt: new Date(),
+        isActive: true,
+      },
+    });
+
+    await this.delVerificationTokenInRedis(
+      this.emailVerificationTokenKey(hashedToken),
+      this.emailVerificationUserKey(userId),
+    );
+
+    if (updated.count === 0) {
+      throw new AppError('Email already verified', 409, ErrorCode.INVALID_REQUEST);
+    }
+
+    const identitySessionId = await sessionService.createIdentitySession(userId);
+
+    const activeSessionId = await sessionService.createActiveSession(userId, roles);
+
+    return { identitySessionId, activeSessionId, userId };
+  }
+
+  async resendVerificationEmail(email: string, flow: AuthenticationFlow, requestId?: string): Promise<void> {
+    const user = await this.validateUserForResend(email);
+
+    const userKey = this.emailVerificationUserKey(user.id);
+    const existingToken = await redis.get(userKey);
+
+    if (existingToken) {
+      const tokenKey = this.emailVerificationTokenKey(existingToken);
+      await this.delVerificationTokenInRedis(tokenKey, userKey);
+    }
+
+    const verificationToken = AppCrypto.randomToken(32);
+    const hashedVerificationToken = AppCrypto.hash(verificationToken, CRYPTO_ALGORITHMS.sha256, 'hex');
+
+    await this.setVerificationTokenInRedis(hashedVerificationToken, user.id, user.roles);
+
+    await emailService.sendVerificationEmail(user.email, user.name, verificationToken, flow, requestId);
+  }
+
+  // ----------------------- SIGN IN -----------------------
+
+  async validateSignin(email: string, password: string) {
+    const user = await this.validateUser({ email });
+
+    if (!user.password) {
+      throw new AppError('No password in user', 500, ErrorCode.INTERNAL_SERVER_ERROR, false);
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+
+    const failureKey = this.signinFailCountKey(user.id);
+
+    if (!isValid) {
+      const count = await redis.incr(failureKey);
+
+      if (count === 1) {
+        await redis.expire(failureKey, this.signinFailCountExpiry);
+      }
+
+      if (count >= this.maxSigninFailures) {
+        const lockedUntil = new Date(Date.now() + this.signinLockUntil * 1000);
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { isLocked: true, lockedUntil },
+        });
+
+        await redis.del(failureKey);
+
+        throw new AppError('Account locked due to too many failed attempts', 403, ErrorCode.ACCOUNT_LOCKED);
+      }
+
+      throw new AppError('Unauthorized', 401, ErrorCode.UNAUTHORIZED);
+    }
+
+    await redis.del(failureKey);
 
     return {
       id: user.id,
       email: user.email,
-      identitySessionId,
-      activeSessionId,
+      name: user.name,
+      roles: user.roles,
+      mfaEnabled: user.mfaEnabled,
+      isLocked: user.isLocked,
+      lockedUntil: user.lockedUntil,
     };
   }
 
-  // SIGNOUT
+  async createNewSession(
+    userId: string,
+    roles: Role[],
+  ): Promise<{ identitySessionId: string; activeSessionId: string }> {
+    const identitySessionId = await sessionService.createIdentitySession(userId);
+    const activeSessionId = await sessionService.createActiveSession(userId, roles);
+    return { identitySessionId, activeSessionId };
+  }
+
+  async sendSigninVerificationEmail(input: {
+    userId: string;
+    email: string;
+    name: string;
+    flow: AuthenticationFlow;
+    requestId?: string;
+  }): Promise<void> {
+    const verificationToken = AppCrypto.randomToken(32);
+    const hashedVerificationToken = AppCrypto.hash(verificationToken, CRYPTO_ALGORITHMS.sha256, 'hex');
+
+    await redis.set(
+      this.signinVerificationTokenKey(hashedVerificationToken),
+      input.userId,
+      'EX',
+      this.signinVerificationTokenExpiry,
+    );
+
+    await emailService.sendSignInVerifyEmail(
+      input.email,
+      input.name,
+      verificationToken,
+      input.flow,
+      input.requestId,
+    );
+  }
+
+  async verifySignIn(token: string) {
+    const hashed = AppCrypto.hash(token, CRYPTO_ALGORITHMS.sha256, 'hex');
+
+    const userId = await redis.get(this.signinVerificationTokenKey(hashed));
+
+    if (!userId) {
+      throw new AppError(
+        'Invalid or expired verification token',
+        400,
+        ErrorCode.INVALID_SIGNIN_VERIFICATION_TOKEN,
+      );
+    }
+
+    await redis.del(this.signinVerificationTokenKey(hashed));
+
+    const user = await this.validateUser({ id: userId });
+
+    return { id: user.id, email: user.email, roles: user.roles };
+  }
+
+  // ----------------------- SIGNOUT -----------------------
+
   async signout(isid: string, asid: string): Promise<void> {
     if (isid) {
       await sessionService.revokeIdentitySession(isid);
@@ -372,18 +403,12 @@ export class AuthService {
     }
   }
 
-  // FORGOT PASSWORD
+  // ----------------------- FORGOT & RESET PASSWORD -----------------------
   // generates a token and send it via verified email
   // user get in to the reset password via that email link + token
-  async initiateResetPassword(email: string): Promise<void> {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true, name: true },
-    });
 
-    if (!user) {
-      return;
-    }
+  async initiateResetPassword(email: string, flow: AuthenticationFlow, requestId?: string): Promise<void> {
+    const user = await this.validateUser({ email });
 
     const resetToken = AppCrypto.randomToken(32);
     const hashedToken = AppCrypto.hash(resetToken, CRYPTO_ALGORITHMS.sha256, 'hex');
@@ -391,48 +416,27 @@ export class AuthService {
     await redis.set(this.resetPasswordTokenKey(hashedToken), user.id, 'EX', this.resetPasswordExpiry);
 
     try {
-      await emailService.sendPasswordResetEmail(email, user.name, resetToken);
-    } catch (error) {
+      await emailService.sendPasswordResetEmail(email, user.name, resetToken, flow, requestId);
+    } catch {
       // If email fails, clear the reset token
       await redis.del(this.resetPasswordTokenKey(hashedToken));
-      throw error;
+      throw new AppError('Email service failed', 500, ErrorCode.INTERNAL_SERVER_ERROR, false);
     }
   }
 
-  // RESET PASSWORD
-  async resetPassword(token: string, oldPassword: string, newPassword: string): Promise<void> {
-    const hashedToken = AppCrypto.hash(token, CRYPTO_ALGORITHMS.sha256, 'hex');
-    const userId = await redis.get(this.resetPasswordTokenKey(hashedToken));
+  async resetPassword(token: string, newPassword: string) {
+    const hashed = AppCrypto.hash(token, CRYPTO_ALGORITHMS.sha256, 'hex');
+
+    const userId = await redis.get(this.resetPasswordTokenKey(hashed));
 
     if (!userId) {
-      throw new AppError('Invalid or expired reset token', 400, ErrorCode.INVALID_TOKEN);
+      throw new AppError('Invalid or expired reset token', 400, ErrorCode.INVALID_RESET_TOKEN);
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        isActive: true,
-        isLocked: true,
-        password: true,
-      },
-    });
-
-    if (!user || !user.isActive) {
-      throw new AppError('Account disabled', 403, ErrorCode.FORBIDDEN);
-    }
-
-    if (user.isLocked) {
-      throw new AppError('Account locked', 423, ErrorCode.ACCOUNT_LOCKED);
-    }
+    const user = await this.validateUser({ id: userId });
 
     if (!user.password) {
-      throw new AppError('Password reset is not supported for this account', 400, ErrorCode.INVALID_REQUEST);
-    }
-
-    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
-    if (!isOldPasswordValid) {
-      throw new AppError('Old password is incorrect', 401, ErrorCode.INVALID_CREDENTIALS);
+      throw new AppError('User has no password set', 500, ErrorCode.INTERNAL_SERVER_ERROR, false);
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -442,14 +446,13 @@ export class AuthService {
         where: { id: userId },
         data: { password: hashedPassword },
       }),
-
       prisma.identitySession.updateMany({
         where: { userId },
         data: { revoked: true },
       }),
     ]);
 
-    await redis.del(this.resetPasswordTokenKey(hashedToken));
+    await redis.del(this.resetPasswordTokenKey(hashed));
   }
 }
 

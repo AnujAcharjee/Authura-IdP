@@ -1,26 +1,28 @@
 <% layout("layouts/main") %>
 
-<div class="max-w-3xl mx-auto py-8 sm:py-12 space-y-6 sm:space-y-8">
+<div class="max-w-3xl mx-auto py-10 space-y-8">
 
   <!-- Back -->
-  <a href="/account" class="inline-flex items-center text-sm font-medium text-slate-600 hover:text-orange-600">
+  <a href="/account" class="inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
     </svg>
     Back to Account
   </a>
 
-  <section class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-200 p-8">
+  <section class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-8">
 
-    <div class="flex items-start sm:items-center gap-4 mb-6">
-      <div class="w-12 h-12 rounded-xl bg-linear-to-br from-red-500 to-red-600 flex items-center justify-center">
+    <!-- Header -->
+    <div class="flex items-start gap-4 mb-8">
+
+      <div class="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
 
       <div>
-        <h1 class="text-2xl font-bold text-red-900">
+        <h1 class="text-xl font-semibold text-slate-900">
           <%= action === 'delete'
               ? 'Delete Account'
               : action === 'activate'
@@ -32,73 +34,81 @@
                     : 'Deactivate Account'
           %>
         </h1>
-        <p class="text-sm text-red-700">
-          This action requires confirmation
+        <p class="text-sm text-slate-500 mt-1">
+          Please confirm this action.
         </p>
       </div>
     </div>
 
-    <div class="rounded-xl border-l-4 border-red-500 bg-red-50 p-4 mb-6">
+    <!-- Context Notice -->
+    <div class="rounded-xl bg-slate-50 border border-slate-200 p-5 mb-8">
       <% if (action === 'delete') { %>
-      <p class="text-sm text-red-800">
-        Deleting your account is <strong>permanent</strong>. All data will be removed and cannot be recovered.
+      <p class="text-sm text-slate-700">
+        This action is permanent. All associated data will be removed and cannot be recovered.
       </p>
       <% } else if (action === 'revoke-consent') { %>
-      <p class="text-sm text-red-800">
-        You are about to revoke OAuth consent for <strong><%= clientDomain || 'this application' %></strong>.
+      <p class="text-sm text-slate-700">
+        OAuth consent will be revoked for
+        <span class="font-medium text-slate-900"><%= clientDomain || 'this application' %></span>.
       </p>
       <% } else if (action === 'reissue-consent') { %>
-      <p class="text-sm text-red-800">
-        You are about to reissue OAuth consent for <strong><%= clientDomain || 'this application' %></strong>.
+      <p class="text-sm text-slate-700">
+        OAuth consent will be reissued for
+        <span class="font-medium text-slate-900"><%= clientDomain || 'this application' %></span>.
       </p>
       <% } else if (action === 'activate') { %>
-      <p class="text-sm text-red-800">
-        Activating your account will restore access to your dashboard and applications.
+      <p class="text-sm text-slate-700">
+        Your account access will be restored immediately.
       </p>
       <% } else { %>
-      <p class="text-sm text-red-800">
-        Deactivating your account will disable access immediately. You can reactivate by signing in again.
+      <p class="text-sm text-slate-700">
+        Your account will be deactivated and access will be disabled.
       </p>
       <% } %>
     </div>
 
-    <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:gap-4">
-      <a href="/account" class="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+    <!-- Actions -->
+    <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+
+      <a href="/account" class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition">
         Cancel
       </a>
 
       <% if (action === 'delete') { %>
-      <form method="POST" action="/api/v1/account?_method=DELETE">
+      <form method="POST" action="/account?_method=DELETE">
         <input type="hidden" name="_method" value="DELETE">
         <% } else if (action === 'revoke-consent') { %>
-        <form method="POST" action="/api/v1/oauth/consent/revoke">
-          <input type="hidden" name="clientId" value="<%= clientId %>">
+        <form method="POST" action="/consent/revoke">
+          <input type="hidden" name="client_id" value="<%= clientId %>">
           <% } else if (action === 'reissue-consent') { %>
-          <form method="POST" action="/api/v1/oauth/consent/reissue">
-            <input type="hidden" name="clientId" value="<%= clientId %>">
+          <form method="POST" action="/consent/reissue">
+            <input type="hidden" name="client_id" value="<%= clientId %>">
             <% } else if (action === 'activate') { %>
-            <form method="POST" action="/api/v1/account/activate">
+            <form method="POST" action="/account/activate">
               <% } else { %>
-              <form method="POST" action="/api/v1/account/deactivate">
+              <form method="POST" action="/account/deactivate">
                 <% } %>
 
-                <button type="submit" class="px-6 py-2.5 rounded-lg text-sm font-semibold text-white
-                      bg-linear-to-r from-red-500 to-red-600
-                      hover:from-red-600 hover:to-red-700
-                      focus:outline-none focus:ring-4 focus:ring-red-500/30
-                ">
+                <button type="submit" class="px-6 py-2.5 text-sm font-medium rounded-lg border transition
+            <%= action === 'delete'
+                ? 'border-rose-500 text-rose-600 hover:bg-rose-50'
+                : action === 'activate'
+                  ? 'border-green-500 text-green-600 hover:bg-green-50'
+                  : 'border-slate-900 text-slate-900 hover:bg-slate-100'
+            %>">
                   <%= action === 'delete'
-                    ? 'Yes, Delete My Account'
-                    : action === 'revoke-consent'
-                      ? 'Yes, Revoke Consent'
-                      : action === 'reissue-consent'
-                        ? 'Yes, Reissue Consent'
-                        : action === 'activate'
-                          ? 'Yes, Activate My Account'
-                          : 'Yes, Deactivate My Account'
-                  %>
+              ? 'Delete Account'
+              : action === 'revoke-consent'
+                ? 'Revoke Consent'
+                : action === 'reissue-consent'
+                  ? 'Reissue Consent'
+                  : action === 'activate'
+                    ? 'Activate Account'
+                    : 'Deactivate Account'
+          %>
                 </button>
               </form>
+
     </div>
 
   </section>

@@ -13,7 +13,7 @@ type EncryptedPrivateKey = {
 
 export class JoseService {
   private readonly ALG = KEY_ALGORITHMS.RS256;
-  private readonly ENCRYPTION_KEY = Buffer.from(ENV.KEY_ENC_SECRET!, 'hex');
+  private readonly ENCRYPTION_KEY = Buffer.from(ENV.KEY_ENC_SECRET, 'hex');
 
   constructor() {
     if (this.ENCRYPTION_KEY.length !== 32) {
@@ -184,7 +184,7 @@ export class JoseService {
   // --------------- Sign JWT (Access / ID token) ---------------
 
   async signJwt(
-    payload: Record<string, any>,
+    payload: Record<string, unknown>,
     options: {
       issuer: string;
       audience: string;

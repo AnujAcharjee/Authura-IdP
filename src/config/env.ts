@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import 'dotenv/config';
 
-const isProd = process.env.NODE_ENV === 'production';
+// const isProd = process.env.NODE_ENV === 'production';
 const isDev = process.env.NODE_ENV === 'development';
 
 const numberFromString = (name: string) =>
@@ -39,7 +39,7 @@ const envSchema = z
 
     PORT: port('PORT'),
 
-    APP_NAME: isDev ? z.string().optional().default('Authura') : z.string(),
+    APP_NAME: isDev ? z.string().optional().default('Pramaan') : z.string(),
     APP_DOMAIN: z.string({ error: 'APP_DOMAIN is required' }).min(1, 'APP_DOMAIN cannot be empty'),
     APP_DOC_URL: url("APP_DOC_URL"),
 

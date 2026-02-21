@@ -22,7 +22,7 @@
     <% if (_id) { %>id="<%= _id %>"<% } %>
     <% if (_name) { %>name="<%= _name %>"<% } %>
     <% if (_required) { %>required<% } %>
-    class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all duration-200 focus:border-sky-500 focus:outline-none focus:ring-4 focus:ring-sky-500/10"
+    class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all duration-200 focus:border-brand-orange focus:outline-none focus:ring-4 focus:ring-brand-orange/30"
   >
     <% _options.forEach(function(option) { %>
       <option value="<%= option.value %>" <%= _value === option.value ? 'selected' : '' %>>

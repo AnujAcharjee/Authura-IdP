@@ -1,10 +1,9 @@
 declare module 'ejs-mate' {
-  type Engine = (
+  const engine: (
     path: string,
-    options: Record<string, any>,
-    callback: (err: any, rendered?: string) => void,
+    options: object,
+    callback: (err: unknown, rendered?: string) => void
   ) => void;
 
-  const engine: Engine;
   export = engine;
 }

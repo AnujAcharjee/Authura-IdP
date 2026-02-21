@@ -1,16 +1,19 @@
 import prisma from '../config/database.js';
 import redis from '../config/redis.js';
+import z from 'zod';
+import { OAuthZSchema } from '../validators/oauth.validator.js';
 import { ENV } from '../config/env.js';
 import { AppError } from '../utils/appError.js';
 import { ErrorCode } from '../utils/errorCodes.js';
 import { AppCrypto } from '../utils/crypto.js';
-import { joseService, type JoseService } from '../services/jose.service.js';
+import { joseService, type JoseService } from './jose.service.js';
 import { SCOPES, CRYPTO_ALGORITHMS, type CryptoAlgorithm, type Scope } from '../utils/constant.js';
-import { clientService, type ClientService } from '../services/client.service.js';
+import { clientService, type ClientService } from './client.service.js';
 
-export interface AuthorizationRequest {
+export type AuthorizeParamsType = z.input<typeof OAuthZSchema.authorizeSchema>['query'];
+
+export interface AuthorizationCacheType {
   id: string;
-  userId: string;
   clientId: string;
   redirectUri: string;
   scopes: Scope[];
@@ -18,7 +21,12 @@ export interface AuthorizationRequest {
   nonce?: string;
   codeChallenge?: string;
   codeChallengeAlgo?: CryptoAlgorithm;
+  codeChallengeMethod?: 'plain';
   createdAt: number;
+}
+
+export interface AuthCodeReqCacheType extends AuthorizationCacheType {
+  userId: string;
 }
 
 export type OAuthConsentView = {
@@ -69,97 +77,96 @@ export class OAuthService {
     return scopes;
   }
 
-  // ---------- CREATE AUTH REQUEST ----------
+  // ---------- AUTH REQUEST ----------
 
-  async createAuthorizationRequest(input: {
-    responseType: string;
-    clientId: string;
-    redirectUri: string;
-    scope: string;
-    state?: string;
-    nonce?: string;
-    codeChallenge?: string;
-    codeChallengeAlgo?: CryptoAlgorithm;
-    requestId: string;
-    userId: string;
-  }): Promise<AuthorizationRequest> {
-    if (input.responseType !== 'code') {
-      throw new AppError('Unsupported response type', 400, ErrorCode.INVALID_INPUT);
-    }
+  // used in middleware
+  async validateAndCacheAuthorizeRequest(params: AuthorizeParamsType, requestId: string): Promise<void> {
+    /**
+     * Zod already validated
+     *  - response_type = code
+     *  - code_challenge_algo if provided
+     */
 
     // client validation
-    const client = await prisma.oAuthClient.findUnique({ where: { id: input.clientId } });
+    const client = await prisma.oAuthClient.findUnique({ where: { id: params.client_id } });
     if (!client || !client.isActive) {
-      throw new AppError('Invalid client', 401, ErrorCode.INVALID_CLIENT);
+      throw new AppError('Invalid client', 400, ErrorCode.INVALID_CLIENT);
     }
 
     // redirect uri validation
-    if (!client.redirectURIs.includes(input.redirectUri)) {
+    if (!client.redirectURIs.includes(params.redirect_uri)) {
       throw new AppError('Invalid redirect_uri', 400, ErrorCode.INVALID_REDIRECT_URI);
     }
 
     // scope validation
-    const scopes: Scope[] = this.validateScopes(input.scope);
+    const scopes: Scope[] = this.validateScopes(params.scope);
 
     // openid - nonce requirement check
-    if (scopes.includes(SCOPES.OPENID) && !input.nonce) {
-      throw new AppError('Nonce is required', 400, ErrorCode.INVALID_INPUT);
+    if (scopes.includes(SCOPES.OPENID) && !params.nonce) {
+      throw new AppError('nonce is required for open_id connect', 400, ErrorCode.INVALID_REQUEST);
     }
 
     // enforce PKCE
-    if (client.enforcePKCE && (!input.codeChallenge || !input.codeChallengeAlgo)) {
-      throw new AppError('PKCE is required', 400, ErrorCode.PKCE_REQUIRED);
+    const codeChallengeAlgo =
+      params.code_challenge_algo ??
+      (params.code_challenge_method === 'S256' ? CRYPTO_ALGORITHMS.sha256 : undefined);
+    const codeChallengeMethod = params.code_challenge_method === 'plain' ? 'plain' : undefined;
+
+    if (client.enforcePKCE && (!params.code_challenge || (!codeChallengeAlgo && !codeChallengeMethod))) {
+      throw new AppError('PKCE is required', 400, ErrorCode.INVALID_REQUEST);
     }
 
-    // Store req in cache
-    const req: AuthorizationRequest = {
-      id: input.requestId,
-      userId: input.userId,
-      clientId: client.id,
-      redirectUri: input.redirectUri,
+    // Cache
+    const req: AuthorizationCacheType = {
+      id: requestId,
+      clientId: params.client_id,
+      redirectUri: params.redirect_uri,
       scopes,
-      state: input.state,
-      nonce: input.nonce,
-      codeChallenge: input.codeChallenge,
-      codeChallengeAlgo: input.codeChallengeAlgo,
+      state: params.state,
+      nonce: params.nonce,
+      codeChallenge: params.code_challenge,
+      codeChallengeAlgo,
+      codeChallengeMethod,
       createdAt: Date.now(),
     };
 
     await redis.set(this.authRequestKey(req.id), JSON.stringify(req), 'EX', this.authRequestTTL);
-    return req;
   }
 
-  // ---------- GET AUTH REQUEST ----------
-
-  async getAuthorizationRequest(id: string): Promise<AuthorizationRequest> {
+  async getAuthorizationRequest(id: string): Promise<AuthorizationCacheType> {
     const raw = await redis.get(this.authRequestKey(id));
     if (!raw) throw new AppError('Authorization request not found', 400, ErrorCode.INVALID_INPUT);
-    return JSON.parse(raw);
+    return JSON.parse(raw) as AuthorizationCacheType;
   }
-
-  // ---------- DELETE AUTH REQUEST ----------
 
   async deleteAuthorizationRequest(id: string): Promise<void> {
     await redis.del(this.authRequestKey(id));
   }
 
-  // ---------- ISSUE AUTH CODE ----------
+  // ---------- AUTHORIZE ----------
 
-  private async issueAuthorizationCode(req: AuthorizationRequest): Promise<string> {
+  async issueAuthorizationCode(authReq: AuthorizationCacheType, userId: string): Promise<string> {
     const code = AppCrypto.randomToken(32);
     const hash = AppCrypto.hash(code, CRYPTO_ALGORITHMS.sha256, 'hex');
+    const authCodeReq: AuthCodeReqCacheType = { ...authReq, userId };
 
-    await redis.set(this.authCodeKey(hash), JSON.stringify(req), 'EX', this.authCodeTTL);
-    await this.deleteAuthorizationRequest(req.id);
+    await redis.set(this.authCodeKey(hash), JSON.stringify(authCodeReq), 'EX', this.authCodeTTL);
+    await this.deleteAuthorizationRequest(authReq.id);
     return code;
   }
 
-  // ---------- AUTHORIZE ----------
+  async authorize(requestId: string, userId: string): Promise<string> {
+    const authReq = await this.getAuthorizationRequest(requestId);
 
-  async authorize(authReq: AuthorizationRequest) {
-    const code = await this.issueAuthorizationCode(authReq);
+    const hasConsent = await this.hasConsent(userId, authReq.clientId, authReq.scopes);
+    if (!hasConsent) {
+      return `/oauth/consent?request_id=${encodeURIComponent(requestId)}`;
+    }
+
+    const authCode = await this.issueAuthorizationCode(authReq, userId);
+
     const redirectURL = new URL(authReq.redirectUri);
-    redirectURL.searchParams.set('code', code);
+    redirectURL.searchParams.set('code', authCode);
     if (authReq.state) redirectURL.searchParams.set('state', authReq.state);
 
     return redirectURL.toString();
@@ -167,15 +174,13 @@ export class OAuthService {
 
   // ---------- CONSENT CHECK ----------
 
-  async hasConsent(userId: string, clientId: string, scopes: string[]): Promise<boolean> {
+  async hasConsent(userId: string, clientId: string, scopes: Scope[]): Promise<boolean> {
     const consent = await prisma.oAuthConsent.findFirst({
       where: { userId, clientId, revokedAt: null },
     });
 
     return !!consent && scopes.every((s) => consent.scopes.includes(s));
   }
-
-  // ---------- STORE CONSENT ----------
 
   async storeConsent(userId: string, clientId: string, scopes: string[]) {
     if (scopes.length === 0) return;
@@ -200,14 +205,48 @@ export class OAuthService {
     });
   }
 
-  // ---------- TOKEN ----------
+  // ---------- TOKENS ----------
+
+  private async generateAccessToken(userId: string, scopes: string[]): Promise<string> {
+    const accessTokenPayload: AccessTokenPayload = {
+      sub: userId,
+      scope: scopes.join(' '), // 'openid profile email',
+    };
+
+    return await this.joseService.signJwt(accessTokenPayload, {
+      issuer: ENV.AUTH_ISSUER,
+      audience: 'userinfo',
+      expiresIn: this.authTokensTTL,
+    });
+  }
+
+  private async generateIdToken(
+    userId: string,
+    nonce: string | undefined,
+    clientId: string,
+  ): Promise<string> {
+    if (!nonce) {
+      throw new AppError('Nonce is required for ID token generation', 400, ErrorCode.INVALID_INPUT);
+    }
+
+    const idTokenPayload: IdTokenPayload = {
+      sub: userId,
+      nonce,
+    };
+
+    return await this.joseService.signJwt(idTokenPayload, {
+      issuer: ENV.AUTH_ISSUER,
+      audience: clientId,
+      expiresIn: this.authTokensTTL,
+    });
+  }
 
   async issueTokens(input: {
     grantType: string;
     code: string;
     codeVerifier?: string;
     clientId: string;
-    clientSecret?: string;
+    clientSecret: string;
   }) {
     if (input.grantType !== 'authorization_code') {
       throw new AppError('Unsupported grant_type', 400, ErrorCode.INVALID_INPUT);
@@ -217,70 +256,54 @@ export class OAuthService {
     const hash = AppCrypto.hash(input.code, CRYPTO_ALGORITHMS.sha256, 'hex');
     const raw = await redis.get(this.authCodeKey(hash));
     if (!raw) throw new AppError('Invalid grant', 400, ErrorCode.UNAUTHORIZED_CLIENT);
-
-    const payload = JSON.parse(raw) as AuthorizationRequest;
+    const authReq = JSON.parse(raw) as AuthCodeReqCacheType;
 
     // Client validation
-    if (payload.clientId !== input.clientId) {
+    if (authReq.clientId !== input.clientId) {
       throw new AppError('Invalid client', 401, ErrorCode.INVALID_CLIENT);
     }
 
     const isValidClient = await this.clientService.verifyClient({
       clientId: input.clientId,
-      clientSecret: input.clientSecret!,
+      clientSecret: input.clientSecret,
     });
     if (!isValidClient) throw new AppError('Invalid client', 401, ErrorCode.INVALID_CLIENT);
 
     // PKCE validation
-    if (payload.codeChallenge) {
-      if (!payload.codeChallengeAlgo || !input.codeVerifier) {
-        throw new AppError(
-          'PKCE codeVerifier or codeChallengeAlgo missing.',
-          400,
-          ErrorCode.INVALID_INPUT,
-          false,
-        );
+    if (authReq.codeChallenge) {
+      if (!input.codeVerifier) {
+        throw new AppError('PKCE codeVerifier missing.', 400, ErrorCode.INVALID_INPUT);
       }
 
-      const ok = AppCrypto.verifyPKCE({
-        codeVerifier: input.codeVerifier,
-        codeChallenge: payload.codeChallenge,
-        algorithm: payload.codeChallengeAlgo,
-      });
+      let ok = false;
+      if (authReq.codeChallengeMethod === 'plain') {
+        ok = AppCrypto.timingSafeCompare(input.codeVerifier, authReq.codeChallenge);
+      } else {
+        if (!authReq.codeChallengeAlgo) {
+          throw new AppError('PKCE codeChallengeAlgo missing.', 400, ErrorCode.INVALID_INPUT);
+        }
+        ok = AppCrypto.verifyPKCE({
+          codeVerifier: input.codeVerifier,
+          codeChallenge: authReq.codeChallenge,
+          algorithm: authReq.codeChallengeAlgo,
+        });
+      }
 
       if (!ok) {
         throw new AppError('Invalid grant', 400, ErrorCode.UNAUTHORIZED_CLIENT);
       }
     }
 
-    // delete cache
+    // delete auth code: authz cache
     await redis.del(this.authCodeKey(hash));
 
-    const accessTokenPayload: AccessTokenPayload = {
-      sub: payload.userId,
-      scope: payload.scopes.join(' '), // 'openid profile email',
-    };
-
-    // generate tokens
-    const accessToken = await this.joseService.signJwt(accessTokenPayload, {
-      issuer: ENV.AUTH_ISSUER,
-      audience: 'userinfo',
-      expiresIn: this.authTokensTTL,
-    });
+    // access token
+    const accessToken = await this.generateAccessToken(authReq.userId, authReq.scopes);
 
     let idToken = undefined;
     // generate only if scopes contain openid
-    if (payload.scopes.includes(SCOPES.OPENID)) {
-      const idTokenPayload: IdTokenPayload = {
-        sub: payload.userId,
-        nonce: payload.nonce!,
-      };
-
-      idToken = await this.joseService.signJwt(idTokenPayload, {
-        issuer: ENV.AUTH_ISSUER,
-        audience: payload.clientId,
-        expiresIn: this.authTokensTTL,
-      });
+    if (authReq.scopes.includes(SCOPES.OPENID)) {
+      idToken = await this.generateIdToken(authReq.userId, authReq.nonce, authReq.clientId);
     }
 
     return { accessToken, idToken };

@@ -1,5 +1,5 @@
 services:
-  authura-dev:
+  pramaan-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -19,9 +19,9 @@ services:
       - "8080:8080"
     env_file:
       - .env
-    depends_on:
-      redis:
-        condition: service_healthy
+    # depends_on:
+    #   redis:
+    #     condition: service_healthy
     command: |
       sh -c '
         npm run prisma:generate &&
@@ -31,7 +31,7 @@ services:
         npx concurrently "npm run css:dev" "npm run dev"
       '
     networks:
-      - authura-dev-network
+      - pramaan-dev-network
     restart: unless-stopped
 
   redis:
@@ -51,13 +51,13 @@ services:
       timeout: 3s
       retries: 5
     networks:
-      - authura-dev-network
+      - pramaan-dev-network
 
 volumes:
-  redis-data:
+  # redis-data:
   api_node_modules:
   api_dist:
 
 networks:
-  authura-dev-network:
+  pramaan-dev-network:
     driver: bridge

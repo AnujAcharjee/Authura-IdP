@@ -23,7 +23,7 @@
 
   <!-- Back Button -->
   <div>
-    <a href="/account" class="inline-flex items-center text-sm font-medium text-slate-600 hover:text-orange-600 transition-colors">
+    <a href="/account" class="inline-flex items-center text-sm font-medium text-slate-600 hover:text-brand-orange transition-colors">
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
@@ -69,29 +69,11 @@
   </div>
   <% } %>
 
-  <style>
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .animate-slideIn {
-      animation: slideIn 0.3s ease-out;
-    }
-  </style>
-
   <!-- App Overview -->
-  <section class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md border border-white/60 p-6">
+  <section class="dashboard-section">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
       <div class="flex items-start sm:items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-linear-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+        <div class="dashboard-icon">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
           </svg>
@@ -134,9 +116,9 @@
   </section>
 
   <!-- Security Section -->
-  <section class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md border border-white/60 p-6">
+  <section class="dashboard-section">
     <div class="flex items-start sm:items-center gap-3 mb-6">
-      <div class="w-10 h-10 rounded-xl bg-linear-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+      <div class="dashboard-icon">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
@@ -149,139 +131,173 @@
 
     <div class="space-y-6">
       <!-- Client Type -->
-      <div class="space-y-4">
-        <label class="text-sm font-medium text-slate-700">Client Type</label>
-        <div class="p-4 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200">
-          <p class="font-semibold text-slate-900"><%= client.clientType %></p>
-          <p class="text-xs text-slate-500 mt-1">Determines how this application authenticates with Authura</p>
+      <div class="group p-5 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 
+            hover:ring-orange-300 hover:shadow-md transition-all duration-300">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <!-- Left Content -->
+          <div>
+            <div class="flex items-center gap-3">
+              <p class="text-sm font-semibold text-slate-800">
+                Client Type
+              </p>
+              <!-- Type Badge -->
+              <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full
+          <%= client.clientType === 'confidential'
+            ? 'bg-sky-100 text-sky-700'
+            : 'bg-purple-100 text-purple-700' %>">
+                <%= client.clientType %>
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2 max-w-md">
+              Determines how this application authenticates with the authorization server.
+            </p>
+          </div>
         </div>
       </div>
 
       <!-- PKCE -->
-      <div class="space-y-4">
-        <label class="text-sm font-medium text-slate-700">PKCE (Proof Key for Code Exchange)</label>
-        <div class="p-4 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <p class="font-semibold text-slate-900 uppercase">
-              <%= client.enforcePKCE ? 'Enforced' : 'Not enforced' %>
+      <div class="group p-5 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 
+            hover:ring-orange-300 hover:shadow-md transition-all duration-300">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <!-- Left Content -->
+          <div>
+            <div class="flex items-center gap-3">
+              <p class="text-sm font-semibold text-slate-800">
+                PKCE (Proof Key for Code Exchange)
+              </p>
+              <!-- Status Badge -->
+              <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full
+          <%= client.enforcePKCE 
+            ? 'bg-green-100 text-green-700' 
+            : 'bg-yellow-100 text-yellow-700' %>">
+                <%= client.enforcePKCE ? 'Enforced' : 'Not enforced' %>
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2 max-w-md">
+              Protects public clients by preventing authorization code interception attacks.
             </p>
-            <span class="inline-flex items-center font-medium rounded-full <%= sizeClasses["sm"] %> <%= variantClasses[client.enforcePKCE ? "success" : "warning"] %>">
-              <%= client.enforcePKCE ? "Enabled" : "Disabled" %>
-            </span>
-
           </div>
-          <p class="text-xs text-slate-500 mt-1">PKCE protects public clients by preventing authorization code interception</p>
         </div>
       </div>
 
       <!-- Environment -->
-      <div class="space-y-4">
-        <label class="text-sm font-medium text-slate-700">Environment</label>
-        <div class="p-4 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200 space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <p class="font-semibold text-slate-900 capitalize"><%= client.environment %></p>
-            <span class="inline-flex items-center font-medium rounded-full <%= sizeClasses["sm"] %> <%= variantClasses[client.environment === "production" ? "success" : "warning"] %>">
-              <%= client.environment === "production" ? "HTTPS only" : "Local HTTP allowed" %>
-            </span>
+      <div class="group p-5 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 
+            hover:ring-orange-300 hover:shadow-md transition-all duration-300">
+        <div class="flex items-start justify-between gap-6 flex-wrap">
+          <!-- Left Content -->
+          <div>
+            <div class="flex items-center gap-3">
+              <p class="text-sm font-semibold text-slate-800">
+                Environment
+              </p>
+              <!-- Environment Badge -->
+              <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full
+          <%= client.environment === "production"
+            ? "bg-green-100 text-green-700"
+            : "bg-amber-100 text-amber-700" %>">
+                <%= client.environment %>
+              </span>
+            </div>
+            <!-- Policy Description -->
+            <% if (client.environment === "development") { %>
+            <p class="text-xs text-slate-500 mt-2 max-w-md">
+              Allows <span class="font-medium text-slate-700">HTTPS</span> for all domains and
+              <span class="font-medium text-slate-700">HTTP</span> only for localhost environments.
+            </p>
+            <% } else { %>
+            <p class="text-xs text-slate-500 mt-2 max-w-md">
+              Only secure <span class="font-medium text-slate-700">HTTPS</span> redirect URIs are accepted.
+            </p>
+            <% } %>
           </div>
-
-          <% if (client.environment === "development") { %>
-          <p class="text-xs text-slate-600">
-            Redirect policy: `https://` allowed for all domains, and `http://` allowed only for localhost / 127.0.0.1 / ::1.
-          </p>
-          <% } else { %>
-          <p class="text-xs text-slate-600">
-            Redirect policy: only `https://` redirect URIs are accepted.
-          </p>
-          <% } %>
-
-          <form method="POST" action="/api/v1/client/<%= client.id %>/environment" class="pt-1">
+          <!-- Action -->
+          <form method="POST" action="/client/<%= client.id %>/environment">
             <input type="hidden" name="environment" value="<%= client.environment === 'development' ? 'production' : 'development' %>" />
-            <button type="submit" class="inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm rounded-lg bg-white border-2 border-sky-500 text-sky-600 hover:bg-sky-50 focus:ring-sky-500/30">
+            <button type="submit" class="px-5 py-2.5 text-sm font-medium
+          <%= client.environment === 'production'
+            ? 'btn-outline-sky'
+            : 'btn-outline-green' %>">
               Switch to <%= client.environment === "development" ? "Production" : "Development" %>
             </button>
           </form>
+
         </div>
       </div>
 
       <!-- Client Secret -->
-      <div class="space-y-4">
-        <label class="text-sm font-medium text-slate-700">
-          Client Secret
-        </label>
+      <div class="group p-5 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 
+            hover:ring-orange-300 hover:shadow-md transition-all duration-300">
 
-        <div class="p-4 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200 space-y-4">
+        <div class="space-y-5">
 
-          <% if (client.client_secret) { %>
+          <!-- Title Row -->
+          <div class="flex items-center justify-between gap-4 flex-wrap">
 
-          <!-- Warning Notice -->
-          <div class="rounded-lg border-l-4 border-amber-500 bg-amber-50/60 p-3">
-            <div class="flex items-start gap-3">
-              <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <div>
-                <p class="text-sm font-semibold text-amber-900">
-                  Store this secret securely
-                </p>
-                <p class="text-xs text-amber-800 mt-1">
-                  This secret is shown only once. If lost, rotate the secret to generate a new one.
-                </p>
-              </div>
+            <div class="flex items-center gap-3">
+              <p class="text-sm font-semibold text-slate-800">
+                Client Secret
+              </p>
+
+              <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full
+          <%= client.client_secret 
+            ? 'bg-amber-100 text-amber-700' 
+            : 'bg-slate-100 text-slate-600' %>">
+
+                <%= client.client_secret ? 'Visible once' : 'Not generated' %>
+              </span>
             </div>
+
+            <% if (!client.client_secret) { %>
+            <form action="/client/rotate-secret" method="POST">
+              <input type="hidden" name="client_id" value="<%= client.id %>" />
+              <button type="submit" class="btn-outline-sky">
+                Generate Secret
+              </button>
+            </form>
+            <% } %>
+          </div>
+          <% if (client.client_secret) { %>
+          <!-- Warning Banner -->
+          <div class="rounded-xl bg-amber-50 border border-amber-200 p-4">
+            <p class="text-sm font-semibold text-amber-900">
+              Store this secret securely
+            </p>
+            <p class="text-xs text-amber-700 mt-1">
+              This secret will not be shown again. If lost, rotate to generate a new one.
+            </p>
           </div>
 
-          <!-- Secret Field + Copy -->
-          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-            <span class="text-sm text-slate-600 shrink-0">
-              Secret
-            </span>
-
-            <div class="flex flex-col sm:flex-row sm:items-center gap-2 flex-1">
-              <input id="client-secret" type="text" readonly value="<%= client.client_secret %>" class="flex-1 font-mono text-xs sm:text-sm bg-white text-slate-800 px-3 py-2 rounded-lg border border-slate-300 focus:outline-none" />
-              <button type="button" onclick="copyToClipboard(document.getElementById('client-secret').value, this)" class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-slate-600 to-slate-700 rounded-lg hover:from-slate-700 hover:to-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-400/30 transition-all">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 012-2h8a2 2 012 2v2m-6 12h8a2 2 002-2v-8a2 2 00-2-2h-8a2 2 00-2 2v8a2 2 002 2z">
-                  </path>
-                </svg>
+          <!-- Secret Field -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex items-center gap-2 flex-1 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
+              <input id="client-secret" type="text" readonly value="<%= client.client_secret %>" class="flex-1 font-mono text-xs sm:text-sm bg-transparent text-slate-800 focus:outline-none" />
+              <button type="button" onclick="copyToClipboard(document.getElementById('client-secret').value, this)" class="text-xs font-medium text-slate-600 hover:text-slate-900 transition">
                 Copy
               </button>
             </div>
           </div>
-
           <% } else { %>
-
           <!-- No Secret State -->
-          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-            <p class="text-sm font-semibold text-slate-900 uppercase">
-              Get New
+          <div class="rounded-xl bg-rose-50 border border-rose-200 p-4">
+            <p class="text-sm font-semibold text-rose-700">
+              No active secret
             </p>
-            <p class="text-xs text-slate-500">
-              ⚠️ Rotating the secret immediately invalidates the previous one. All applications must be updated.
+            <p class="text-xs text-rose-600 mt-1">
+              Generating a secret enables confidential authentication.
+              Rotating a secret immediately invalidates the previous one.
             </p>
           </div>
-
-          <!-- Rotate Button -->
-          <form action="/api/v1/client/rotate-secret" method="POST">
-            <input type="hidden" name="client_id" value="<%= client.id %>" />
-            <button type="submit" class="inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm rounded-lg bg-white border-2 border-sky-500 text-sky-600 hover:bg-sky-50 focus:ring-sky-500/30">
-              Rotate Secret
-            </button>
-          </form>
-
           <% } %>
-
         </div>
       </div>
-
 
     </div>
   </section>
 
   <!-- Redirect URIs Section -->
-  <section class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md border border-white/60 p-6">
+  <section class="dashboard-section">
     <div class="flex items-center gap-3 mb-6">
-      <div class="w-10 h-10 rounded-xl bg-linear-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+      <div class="dashboard-icon">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -305,11 +321,16 @@
       <% for (const uri of client.redirectURIs) { %>
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200 hover:border-orange-300 transition-colors">
         <code class="font-mono text-sm text-slate-700 break-all sm:truncate sm:pr-4"><%= uri %></code>
-        <form method="POST" action="/api/v1/client/<%= client.id %>/ruri" class="flex items-center sm:justify-end">
+        <form method="POST" action="/client/<%= client.id %>/ruri" class="flex items-center sm:justify-end">
           <input type="hidden" name="action" value="del" />
           <input type="hidden" name="redirect_uri" value="<%= uri %>" />
-          <button type="submit" class="inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-red-500/30 shadow-sm hover:shadow-md px-3 py-1.5 text-xs rounded-md">
-            Remove
+          <button type="submit" class="btn-outline-red">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18" />
+              <path d="M8 6V4h8v2" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+            </svg>
           </button>
         </form>
       </div>
@@ -318,31 +339,31 @@
     <% } %>
 
     <!-- Add URI Form -->
-    <div class="mt-6 p-5 rounded-xl bg-linear-to-br from-sky-50 to-sky-100/50 border border-sky-200">
-      <form method="POST" action="/api/v1/client/<%= client.id %>/ruri" class="space-y-3">
+    <div class="mt-6 p-5 rounded-xl bg-linear-to-br from-brand-apricot/50 via-transparent to-brand-apricot/50 border border-brand-apricot/90">
+      <form method="POST" action="/client/<%= client.id %>/ruri" class="space-y-3">
         <input type="hidden" name="action" value="add" />
 
         <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-          <input name="redirect_uri" type="url" required placeholder="https://example.com/callback" class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-sky-500 focus:outline-none focus:ring-4 focus:ring-sky-500/10 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed">
+          <input name="redirect_uri" type="url" required placeholder="https://example.com/callback" class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-brand-orange focus:outline-none focus:ring-4 focus:ring-brand-orange/50 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed">
 
           <div class="shrink-0 sm:pt-1">
-            <button type="submit" class="px-4 py-2.5 text-sm rounded-lg inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed bg-white border-2 border-sky-500 text-sky-600 hover:bg-sky-50 focus:ring-sky-500/30">
+            <button type="submit" class="px-4 py-2.5 text-sm rounded-lg inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed bg-white border-2 border-brand-orange text-brand-orangeDark hover:bg-orange-100 focus:ring-brand-orborder-brand-orange/30">
               Add URI
             </button>
           </div>
         </div>
 
-        <p class="text-xs text-sky-800">
-          Redirect URIs must exactly match the URI used in authorization requests and follow this client's environment policy.
+        <p class="text-xs text-amber-900">
+          Redirect URIs must exactly match the URI used in authorization requests and follow the client's environment policy.
         </p>
       </form>
     </div>
   </section>
 
   <!-- Metadata Section -->
-  <section class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md border border-white/60 p-6">
+  <section class="dashboard-section">
     <div class="flex items-center gap-3 mb-6">
-      <div class="w-10 h-10 rounded-xl bg-linear-to-br from-slate-500 to-slate-600 flex items-center justify-center">
+      <div class="dashboard-icon">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -373,38 +394,71 @@
   </section>
 
   <!-- Danger Zone -->
-  <section class="bg-linear-to-br from-red-50 to-red-100/50 rounded-2xl shadow-md border border-red-200 p-6">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="w-10 h-10 rounded-xl bg-linear-to-br from-red-500 to-red-600 flex items-center justify-center">
+  <section class="dashboard-danger-section">
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="dashboard-icon">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
       <div>
-        <h2 class="text-xl font-bold text-red-900">Danger Zone</h2>
-        <p class="text-sm text-red-700">These actions are irreversible</p>
+        <h2 class="text-lg font-semibold text-slate-900">
+          Danger Zone
+        </h2>
+        <p class="text-sm text-slate-500 mt-1">
+          These actions may impact your application configuration.
+        </p>
       </div>
     </div>
 
-    <div class="space-y-3">
-      <% if (client.isActive) { %>
-      <div>
-        <a href="/client/<%= client.id %>/deactivate?name=<%= encodeURIComponent(client.name) %>" class="text-sm text-red-700 hover:text-red-900 font-medium hover:underline">
-          Disable Application
+    <div class="space-y-4">
+
+      <!-- Activate / Deactivate Card -->
+      <div class="flex items-center justify-between p-5 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 hover:ring-slate-300 transition">
+
+        <div>
+          <p class="text-sm font-semibold text-slate-900">
+            <%= client.isActive ? "Disable Application" : "Activate Application" %>
+          </p>
+          <p class="text-xs text-slate-500 mt-1">
+            <%= client.isActive 
+              ? "Temporarily prevent this client from initiating OAuth flows." 
+              : "Restore access for this client." %>
+          </p>
+        </div>
+
+        <% if (client.isActive) { %>
+        <a href="/client/<%= client.id %>/deactivate?name=<%= encodeURIComponent(client.name) %>" class="btn-outline-red text-sm">
+          Disable
         </a>
-      </div>
-      <% } else { %>
-      <div>
-        <a href="/client/<%= client.id %>/activate?name=<%= encodeURIComponent(client.name) %>" class="text-sm text-sky-500 hover:text-green-900 font-medium hover:underline">
-          Activate Application
+        <% } else { %>
+        <a href="/client/<%= client.id %>/activate?name=<%= encodeURIComponent(client.name) %>" class="btn-outline-sky text-sm">
+          Activate
         </a>
+        <% } %>
+
       </div>
-      <% } %>
-      <div>
-        <a href="/client/<%= client.id %>/delete?name=<%= encodeURIComponent(client.name) %>" class="text-sm text-red-700 hover:text-red-900 font-medium hover:underline">
-          Delete Application
+
+
+      <!-- Delete Card -->
+      <div class="flex items-center justify-between p-5 rounded-2xl bg-white shadow-sm ring-1 ring-rose-200 hover:ring-rose-300 transition">
+
+        <div>
+          <p class="text-sm font-semibold text-slate-900">
+            Delete Application
+          </p>
+          <p class="text-xs text-slate-500 mt-1">
+            Permanently remove this client and all associated configuration.
+          </p>
+        </div>
+
+        <a href="/client/<%= client.id %>/delete?name=<%= encodeURIComponent(client.name) %>" class="btn-outline-red">
+          Delete
         </a>
+
       </div>
+
     </div>
   </section>
 </div>

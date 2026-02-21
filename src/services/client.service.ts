@@ -178,8 +178,14 @@ export class ClientService {
       throw new AppError('Invalid client', 401, ErrorCode.INVALID_CLIENT);
     }
 
-    const { clientSecretHash: _ignored, ...safeClient } = client;
-    return { ...safeClient };
+    return {
+      id: client.id,
+      clientType: client.clientType,
+      isActive: client.isActive,
+      revokedAt: client.revokedAt,
+      enforcePKCE: client.enforcePKCE,
+      redirectURIs: client.redirectURIs,
+    };
   }
 
   // ---------------- CREATE CLIENT ----------------
@@ -231,9 +237,16 @@ export class ClientService {
       },
     });
 
-    const { clientSecretHash: _ignored, ...safeClient } = client;
     return {
-      ...safeClient,
+      id: client.id,
+      userId: client.userId,
+      name: client.name,
+      domain: client.domain.trim().toLowerCase(),
+      clientType: client.clientType,
+      environment: client.environment,
+      enforcePKCE: client.enforcePKCE,
+      redirectURIs: client.redirectURIs,
+      isActive: client.isActive,
       clientSecret,
     };
   }
