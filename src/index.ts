@@ -15,8 +15,7 @@ async function init() {
 
   await joseService.initJwks();
 
-  // TODO: '0.0.0.0'
-  server = app.listen(ENV.PORT,  () => {
+  server = app.listen(ENV.PORT, '0.0.0.0', () => {
     logger.info(`Server running on port ${ENV.PORT} in ${ENV.NODE_ENV} mode`);
   });
 }
