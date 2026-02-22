@@ -13,41 +13,29 @@ services:
       - pramaan
     networks:
       - pramaan-network
+    init:
+      true
 
   pramaan:
-    image: anuj304/pramaan:1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
     env_file:
       - .env
     expose:
       - "8080"
-    depends_on:
-      redis:
-        condition: service_healthy
+    command: ["node", "dist/index.js"]
     networks:
       - pramaan-network
-
-  redis:
-    image: redis:8.4.0
-    command: >
-      redis-server
-      --requirepass ${REDIS_PASSWORD}
-      --appendonly yes
-      --appendfsync everysec
-      --maxmemory 512mb
-      --maxmemory-policy allkeys-lru
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - pramaan-network
+    mem_limit: 512m
+    cpus: 0.5
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    
 
 volumes:
-  redis-data:
   caddy_data:
   caddy_config:
 

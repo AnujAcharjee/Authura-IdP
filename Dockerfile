@@ -3,7 +3,7 @@ FROM node:20.20-alpine3.23 AS builder
 
 WORKDIR /app
 
-RUN apk update && apk upgrade --no-cache
+RUN apk upgrade --no-cache
 
 # Prisma needs DATABASE_URL at generate time
 ARG DATABASE_URL=postgresql://user:pass@localhost:5432/db
@@ -25,7 +25,7 @@ RUN npm prune --omit=dev
 ### ---------- RUNTIME ----------
 FROM node:20.20-alpine3.23 
 
-RUN apk update && apk upgrade --no-cache
+RUN apk upgrade --no-cache
 
 # Non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
@@ -42,6 +42,9 @@ COPY --chown=appuser:appgroup --from=builder /app/public ./public
 COPY --chown=appuser:appgroup --from=builder /app/generated ./generated
 COPY --chown=appuser:appgroup --from=builder /app/src/views ./src/views
 
+ENV NODE_ENV=production
+ENV TZ=UTC
+
 # REMOVE NPM FROM RUNTIME (major CVE reduction)
 RUN npm uninstall -g npm && \
   rm -rf /usr/lib/node_modules/npm \
@@ -50,6 +53,9 @@ RUN npm uninstall -g npm && \
   /usr/local/bin/npx
 
 USER appuser
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/health', r => { if(r.statusCode !== 200) process.exit(1); })"
 
 EXPOSE 8080
 CMD ["node", "dist/index.js"]

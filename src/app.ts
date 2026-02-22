@@ -52,12 +52,7 @@ setupMiddleware(app);
 
 // Health Check
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date(),
-    uptime: process.uptime(),
-    memoryUsage: process.memoryUsage(),
-  });
+  res.status(200).send('OK');
 });
 
 // Routes
