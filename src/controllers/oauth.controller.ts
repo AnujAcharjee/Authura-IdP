@@ -35,8 +35,6 @@ export class OAuthController extends BaseController {
 
       const redirectURL = await this.oauthService.authorize(requestId, userId);
 
-      console.log('\n REDIRECTING TO : ', redirectURL);
-
       return res.redirect(303, redirectURL);
     } catch (error) {
       next(error);
@@ -46,12 +44,9 @@ export class OAuthController extends BaseController {
   // ---------------- CONSENT ----------------
 
   renderConsentPage = this.handleViewRequest(async (req: Request, res: Response) => {
-    console.log('\n CONSENT');
     const requestId = req.query.request_id as string;
     const authReq = await this.oauthService.getAuthorizationRequest(requestId);
-    console.log('AUTHREQ:', { ...authReq });
     const client = await this.clientService.getClient(authReq.clientId);
-    console.log('CLIENT:', client);
 
     res.render('pages/oauth/consent', {
       title: 'Authorize Application',
