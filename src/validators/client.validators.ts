@@ -56,12 +56,14 @@ export class ClientZSchema {
       client_id: UtilFields.clientIdField,
     }),
     body: z.object({
-      environment: z.enum(
-        Object.values(OAUTH_CLIENT_ENVIRONMENTS) as [
-          OAuthClientEnvironment,
-          ...OAuthClientEnvironment[],
-        ],
-      ),
+      environment: z
+        .enum(
+          Object.values(OAUTH_CLIENT_ENVIRONMENTS) as [
+            OAuthClientEnvironment,
+            ...OAuthClientEnvironment[],
+          ],
+        )
+        .optional(),
     }),
   });
 

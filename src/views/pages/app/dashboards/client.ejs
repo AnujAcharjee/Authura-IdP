@@ -40,8 +40,11 @@
     </p>
   </div>
 
+  <%
+    const _warning = typeof warning !== 'undefined' ? warning : undefined;
+  %>
   <% if (_renderPartial) { %>
-  <%- _renderPartial("../../../partials/alert", { success, error }) %>
+  <%- _renderPartial("../../../partials/alert", { success, error, warning: _warning }) %>
   <% } %>
 
   <!-- App Overview -->
@@ -183,15 +186,12 @@
             <% } %>
           </div>
           <!-- Action -->
-          <form method="POST" action="/client/<%= client.id %>/environment">
-            <input type="hidden" name="environment" value="<%= client.environment === 'development' ? 'production' : 'development' %>" />
-            <button type="submit" class="text-xs w-full sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4
-              <%= client.environment === 'production'
-              ? 'btn-outline-sky'
-              : 'btn-outline-green' %>">
-              Switch to <%= client.environment === "development" ? "Production" : "Development" %>
-            </button>
-          </form>
+          <a href="/client/<%= client.id %>/environment?environment=<%= client.environment === 'development' ? 'production' : 'development' %>" class="text-xs sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4
+            <%= client.environment === 'production'
+            ? 'btn-outline-sky'
+            : 'btn-outline-green' %>">
+            Switch to <%= client.environment === "development" ? "Production" : "Development" %>
+          </a>
 
         </div>
       </div>

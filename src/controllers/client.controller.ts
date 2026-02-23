@@ -126,6 +126,7 @@ export class ClientController extends BaseController {
       revokedAtFormatted: client.revokedAt ? new Date(client.revokedAt).toLocaleDateString() : null,
       error: typeof req.query.error === 'string' ? req.query.error : undefined,
       success: typeof req.query.success === 'string' ? req.query.success : undefined,
+      warning: typeof req.query.warning === 'string' ? req.query.warning : undefined,
     };
   }
 
@@ -186,15 +187,14 @@ export class ClientController extends BaseController {
       }
     } catch (error) {
       if (error instanceof AppError) {
-        return res.redirect(
-          303,
-          `/client/${client_id}?error=${encodeURIComponent(error.message)}`,
-        );
+        return res.redirect(303, `/client/${client_id}?error=${encodeURIComponent(error.message)}`);
       }
       throw error;
     }
 
-    return res.redirect(303, `/client/${client_id}`);
+    const successMessage =
+      action === 'add' ? 'Redirect URI added successfully' : 'Redirect URI removed successfully';
+    return res.redirect(303, `/client/${client_id}?success=${encodeURIComponent(successMessage)}`);
   });
 
   // ---------------- ROTATE SECRET ----------------
@@ -227,16 +227,51 @@ export class ClientController extends BaseController {
     const client_id = this.getString(req.params.client_id);
     const environment = this.getString(req.body?.environment);
 
-    if (!client_id || !environment) {
+    if (!client_id) {
       throw new AppError('Environment is required', 400, ErrorCode.INVALID_REQUEST);
     }
 
-    await this.clientService.setClientEnvironment(client_id, environment as OAuthClientEnvironment);
+    try {
+      const client = await this.clientService.getClient(client_id);
+      const targetEnvironment =
+        (
+          environment &&
+          Object.values(OAUTH_CLIENT_ENVIRONMENTS).includes(
+            environment as (typeof OAUTH_CLIENT_ENVIRONMENTS)[keyof typeof OAUTH_CLIENT_ENVIRONMENTS],
+          )
+        ) ?
+          environment
+        : client.environment === OAUTH_CLIENT_ENVIRONMENTS.DEVELOPMENT ? OAUTH_CLIENT_ENVIRONMENTS.PRODUCTION
+        : OAUTH_CLIENT_ENVIRONMENTS.DEVELOPMENT;
 
-    return res.redirect(
-      303,
-      `/client/${client_id}?success=${encodeURIComponent(`Client environment changed to ${environment}`)}`,
-    );
+      const { removedHttpRedirects } = await this.clientService.setClientEnvironment(
+        client_id,
+        targetEnvironment as OAuthClientEnvironment,
+      );
+
+      if (removedHttpRedirects > 0) {
+        return res.redirect(
+          303,
+          `/client/${client_id}?warning=${encodeURIComponent(
+            `Switched to ${targetEnvironment}. Removed ${removedHttpRedirects} HTTP redirect URI${
+              removedHttpRedirects > 1 ? 's' : ''
+            }.`,
+          )}`,
+        );
+      }
+
+      return res.redirect(
+        303,
+        `/client/${client_id}?success=${encodeURIComponent(
+          `Client environment changed to ${targetEnvironment}`,
+        )}`,
+      );
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.redirect(303, `/client/${client_id}?error=${encodeURIComponent(error.message)}`);
+      }
+      throw error;
+    }
   });
 
   deactivate = this.handleViewRequest(async (req, res) => {
@@ -281,12 +316,59 @@ export class ClientController extends BaseController {
     return res.redirect(303, `/account?success=${encodeURIComponent('Client deleted permanently')}`);
   });
 
-  private buildClientConfirmationViewData(req: Request) {
+  private async buildClientConfirmationViewData(req: Request) {
     const clientId = this.getString(req.params.client_id);
     const action = this.getString(req.params.action);
 
     if (!clientId || !action) {
       throw new AppError('Invalid request', 400, ErrorCode.INVALID_REQUEST);
+    }
+
+    const allowedActions = new Set(['delete', 'activate', 'deactivate', 'environment']);
+    if (!allowedActions.has(action)) {
+      throw new AppError('Invalid action', 400, ErrorCode.INVALID_REQUEST);
+    }
+
+    if (action === 'environment') {
+      const client = await this.clientService.getClient(clientId);
+      const requestedEnvironment = this.getString(req.query.environment);
+      let targetEnvironment = requestedEnvironment;
+
+      if (!targetEnvironment) {
+        targetEnvironment =
+          client.environment === OAUTH_CLIENT_ENVIRONMENTS.DEVELOPMENT ?
+            OAUTH_CLIENT_ENVIRONMENTS.PRODUCTION
+          : OAUTH_CLIENT_ENVIRONMENTS.DEVELOPMENT;
+      } else if (
+        !Object.values(OAUTH_CLIENT_ENVIRONMENTS).includes(
+          targetEnvironment as (typeof OAUTH_CLIENT_ENVIRONMENTS)[keyof typeof OAUTH_CLIENT_ENVIRONMENTS],
+        )
+      ) {
+        throw new AppError('Invalid environment', 400, ErrorCode.INVALID_REQUEST);
+      }
+      let httpRedirectCount = 0;
+      let httpsRedirectCount = 0;
+
+      for (const uri of client.redirectURIs) {
+        try {
+          const protocol = new URL(uri).protocol;
+          if (protocol === 'http:') httpRedirectCount += 1;
+          if (protocol === 'https:') httpsRedirectCount += 1;
+        } catch {
+          // ignore invalid entries
+        }
+      }
+
+      return {
+        title: 'Confirm Client Action',
+        clientId,
+        action,
+        name: client.name,
+        currentEnvironment: client.environment,
+        targetEnvironment,
+        httpRedirectCount,
+        httpsRedirectCount,
+      };
     }
 
     return {
@@ -298,7 +380,7 @@ export class ClientController extends BaseController {
   }
 
   renderClientConfirmation = this.handleViewRequest(async (req, res) => {
-    const viewData = this.buildClientConfirmationViewData(req);
+    const viewData = await this.buildClientConfirmationViewData(req);
 
     res.render('pages/app/confirm-action/client', viewData);
   });

@@ -126,19 +126,16 @@ export class ClientService {
     if (url.hash) {
       throw new AppError('Redirect URI must not include fragments', 400, ErrorCode.INVALID_REDIRECT_URI);
     }
-    const hostname = url.hostname.toLowerCase();
-    const isLocalHost =
-      hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
-
-    const isAllowedLocalDevHttp =
-      environment === OAUTH_CLIENT_ENVIRONMENTS.DEVELOPMENT && isHttp && isLocalHost;
-
-    if (!isHttps && !isAllowedLocalDevHttp) {
+    if (environment === OAUTH_CLIENT_ENVIRONMENTS.PRODUCTION && !isHttps) {
       throw new AppError(
-        'Invalid redirect URI. Use HTTPS ( HTTP is only for localhost/127.0.0.1/::1 in development ).',
+        'Invalid redirect URI. Use HTTPS in production.',
         400,
         ErrorCode.INVALID_REDIRECT_URI,
       );
+    }
+
+    if (!isHttps && !isHttp) {
+      throw new AppError('Invalid redirect URI protocol', 400, ErrorCode.INVALID_REDIRECT_URI);
     }
 
     if (trimmed.includes('*')) {
@@ -408,8 +405,49 @@ export class ClientService {
     });
   }
 
-  async setClientEnvironment(clientId: string, environment: OAuthClientEnvironment): Promise<ClientView> {
-    return this.update(clientId, { environment });
+  async setClientEnvironment(
+    clientId: string,
+    environment: OAuthClientEnvironment,
+  ): Promise<{ client: ClientView; removedHttpRedirects: number }> {
+    const client = await prisma.oAuthClient.findUnique({
+      where: { id: clientId },
+      select: {
+        id: true,
+        redirectURIs: true,
+      },
+    });
+
+    if (!client) {
+      throw new AppError('Client not found', 404, ErrorCode.NOT_FOUND);
+    }
+
+    const updates: ClientUpdateInput = { environment };
+    let removedHttpRedirects = 0;
+
+    if (environment === OAUTH_CLIENT_ENVIRONMENTS.PRODUCTION) {
+      const httpsOnly = client.redirectURIs.filter((uri) => {
+        try {
+          return new URL(uri).protocol === 'https:';
+        } catch {
+          return false;
+        }
+      });
+
+      removedHttpRedirects = client.redirectURIs.length - httpsOnly.length;
+
+      if (httpsOnly.length === 0) {
+        throw new AppError(
+          'At least one HTTPS redirect URI is required to switch to production.',
+          400,
+          ErrorCode.INVALID_REDIRECT_URI,
+        );
+      }
+
+      updates.redirectURIs = httpsOnly;
+    }
+
+    const updatedClient = await this.update(clientId, updates);
+    return { client: updatedClient, removedHttpRedirects };
   }
 }
 
