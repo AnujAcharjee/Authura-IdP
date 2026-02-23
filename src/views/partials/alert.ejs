@@ -1,26 +1,39 @@
-<% if (typeof error === "string" && error) { %>
-<div class="mb-6 rounded-xl border-l-4 border-rose-500 bg-linear-to-r from-rose-50 to-rose-50/50 p-4 shadow-sm animate-slideIn" role="alert">
-  <div class="flex items-start gap-3">
-    <div class="shrink-0">
-      <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
+<div data-alert-container>
+  <% if (typeof error === "string" && error && error !== 'Session_expired') { %>
+  <div class="mb-6 rounded-xl border-l-4 border-rose-500 bg-linear-to-r from-rose-50 to-rose-50/50 p-4 shadow-sm animate-slideIn" role="alert" data-alert data-alert-type="error">
+    <div class="flex items-start gap-3">
+      <div class="shrink-0">
+        <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <p class="text-sm text-rose-700 mt-1" data-alert-message><%= error %></p>
+      </div>
+      <button type="button" class="ml-2 text-rose-500/70 hover:text-rose-600 transition" data-alert-close aria-label="Dismiss alert">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
-    <p class="text-sm text-rose-700 mt-1"><%= error %></p>
   </div>
-</div>
-
-<% } else if (typeof success === "string" && success) { %>
-
-<div class="mb-6 rounded-xl border-l-4 border-green-500 bg-linear-to-r from-green-50 to-green-50/50 p-4 shadow-sm animate-slideIn" role="alert">
-  <div class="flex items-start gap-3">
-    <div class="shrink-0">
-      <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
+  <% } else if (typeof success === "string" && success && success !== 'Session_expired') { %>
+  <div class="mb-6 rounded-xl border-l-4 border-green-500 bg-linear-to-r from-green-50 to-green-50/50 p-4 shadow-sm animate-slideIn" role="alert" data-alert data-alert-type="success">
+    <div class="flex items-start gap-3">
+      <div class="shrink-0">
+        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <p class="text-sm text-green-700 mt-1" data-alert-message><%= success %></p>
+      </div>
+      <button type="button" class="ml-2 text-green-500/70 hover:text-green-600 transition" data-alert-close aria-label="Dismiss alert">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
-    <p class="text-sm text-green-700 mt-1"><%= success %></p>
   </div>
+  <% } %>
 </div>
-
-<% } %>

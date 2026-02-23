@@ -1,5 +1,24 @@
 <% layout("layouts/main") %>
 
+<%
+  const isDelete = action === 'delete';
+  const isActivate = action === 'activate';
+  const isRevoke = action === 'revoke-consent';
+  const isReissue = action === 'reissue-consent';
+  const isChangePassword = action === 'change-password';
+  const isMfaEnable = action === 'mfa-enable';
+  const isMfaDisable = action === 'mfa-disable';
+  const isMfa = isMfaEnable || isMfaDisable;
+  const isDeactivate = !(
+    isDelete ||
+    isActivate ||
+    isRevoke ||
+    isReissue ||
+    isChangePassword ||
+    isMfa
+  );
+%>
+
 <div class="max-w-3xl mx-auto py-10 space-y-8">
 
   <!-- Back -->
@@ -23,15 +42,21 @@
 
       <div>
         <h1 class="text-xl font-semibold text-slate-900">
-          <%= action === 'delete'
+          <%= isDelete
               ? 'Delete Account'
-              : action === 'activate'
+              : isActivate
                 ? 'Activate Account'
-                : action === 'revoke-consent'
+                : isRevoke
                   ? 'Revoke OAuth Consent'
-                  : action === 'reissue-consent'
+                  : isReissue
                     ? 'Reissue OAuth Consent'
-                    : 'Deactivate Account'
+                    : isChangePassword
+                      ? 'Send Password Reset Email'
+                      : isMfaEnable
+                        ? 'Enable Two-Factor Authentication'
+                        : isMfaDisable
+                          ? 'Disable Two-Factor Authentication'
+                          : 'Deactivate Account'
           %>
         </h1>
         <p class="text-sm text-slate-500 mt-1">
@@ -42,21 +67,33 @@
 
     <!-- Context Notice -->
     <div class="rounded-xl bg-slate-50 border border-slate-200 p-5 mb-8">
-      <% if (action === 'delete') { %>
+      <% if (isDelete) { %>
       <p class="text-sm text-slate-700">
         This action is permanent. All associated data will be removed and cannot be recovered.
       </p>
-      <% } else if (action === 'revoke-consent') { %>
+      <% } else if (isRevoke) { %>
       <p class="text-sm text-slate-700">
         OAuth consent will be revoked for
         <span class="font-medium text-slate-900"><%= clientDomain || 'this application' %></span>.
       </p>
-      <% } else if (action === 'reissue-consent') { %>
+      <% } else if (isReissue) { %>
       <p class="text-sm text-slate-700">
         OAuth consent will be reissued for
         <span class="font-medium text-slate-900"><%= clientDomain || 'this application' %></span>.
       </p>
-      <% } else if (action === 'activate') { %>
+      <% } else if (isChangePassword) { %>
+      <p class="text-sm text-slate-700">
+        We will send a password reset email to your registered email address.
+      </p>
+      <% } else if (isMfaEnable) { %>
+      <p class="text-sm text-slate-700">
+        Two-factor authentication will be enabled for your account.
+      </p>
+      <% } else if (isMfaDisable) { %>
+      <p class="text-sm text-slate-700">
+        Two-factor authentication will be disabled for your account.
+      </p>
+      <% } else if (isActivate) { %>
       <p class="text-sm text-slate-700">
         Your account access will be restored immediately.
       </p>
@@ -74,37 +111,52 @@
         Cancel
       </a>
 
-      <% if (action === 'delete') { %>
+      <% if (isDelete) { %>
       <form method="POST" action="/account?_method=DELETE">
         <input type="hidden" name="_method" value="DELETE">
-        <% } else if (action === 'revoke-consent') { %>
+        <% } else if (isRevoke) { %>
         <form method="POST" action="/consent/revoke">
           <input type="hidden" name="client_id" value="<%= clientId %>">
-          <% } else if (action === 'reissue-consent') { %>
+          <% } else if (isReissue) { %>
           <form method="POST" action="/consent/reissue">
             <input type="hidden" name="client_id" value="<%= clientId %>">
-            <% } else if (action === 'activate') { %>
+            <% } else if (isChangePassword) { %>
+            <form method="POST" action="/account/change-password">
+              <% } else if (isMfa) { %>
+              <form method="POST" action="/account/mfa">
+                <input type="hidden" name="action" value="<%= isMfaEnable ? 'enable' : 'disable' %>">
+                <% } else if (isActivate) { %>
             <form method="POST" action="/account/activate">
               <% } else { %>
               <form method="POST" action="/account/deactivate">
                 <% } %>
 
                 <button type="submit" class="px-6 py-2.5 text-sm font-medium rounded-lg border transition
-            <%= action === 'delete'
+            <%= (isDelete || isRevoke || isMfaDisable)
                 ? 'border-rose-500 text-rose-600 hover:bg-rose-50'
-                : action === 'activate'
+                : (isActivate || isMfaEnable)
                   ? 'border-green-500 text-green-600 hover:bg-green-50'
-                  : 'border-slate-900 text-slate-900 hover:bg-slate-100'
+                  : isChangePassword
+                    ? 'border-sky-500 text-sky-600 hover:bg-sky-50'
+                    : isReissue
+                      ? 'border-sky-500 text-sky-600 hover:bg-sky-50'
+                      : 'border-slate-900 text-slate-900 hover:bg-slate-100'
             %>">
-                  <%= action === 'delete'
+                  <%= isDelete
               ? 'Delete Account'
-              : action === 'revoke-consent'
+              : isRevoke
                 ? 'Revoke Consent'
-                : action === 'reissue-consent'
+                : isReissue
                   ? 'Reissue Consent'
-                  : action === 'activate'
-                    ? 'Activate Account'
-                    : 'Deactivate Account'
+                  : isChangePassword
+                    ? 'Send Reset Email'
+                    : isMfaEnable
+                      ? 'Enable 2FA'
+                      : isMfaDisable
+                        ? 'Disable 2FA'
+                        : isActivate
+                          ? 'Activate Account'
+                          : 'Deactivate Account'
           %>
                 </button>
               </form>

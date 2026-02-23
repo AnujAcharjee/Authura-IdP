@@ -104,21 +104,14 @@
           </div>
 
           <!-- Resend -->
-          <form method="POST" action="/account/change-password">
-            <input type="hidden" name="email" value="<%= user.email %>" />
-            <button type="submit" class="btn-outline-sky text-xs w-full sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
-              Resend
-            </button>
-          </form>
-          </form>
+          <a href="/account/change-password" class="btn-outline-sky text-xs w-full sm:w-auto sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
+            Resend
+          </a>
         </div>
         <% } else { %>
-        <form method="POST" action="/account/change-password">
-          <input type="hidden" name="email" value="<%= user.email %>" />
-          <button type="submit" class="btn-outline-sky text-xs w-full sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
-            Reset
-          </button>
-        </form>
+        <a href="/account/change-password" class="btn-outline-sky text-xs w-full sm:w-auto sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
+            Reset Password
+        </a>
         <% } %>
       </div>
 
@@ -147,12 +140,9 @@
           </div>
         </div>
 
-        <form method="POST" action="/account/mfa">
-          <input type="hidden" name="action" value="<%= user.mfaEnabled ? 'disable' : 'enable' %>" />
-          <button type="submit" class="<%= user.mfaEnabled ? 'btn-outline-rose' : 'btn-outline-sky'%> text-xs w-full sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
-            <%= user.mfaEnabled ? 'Disable' : 'Enable'%>
-          </button>
-        </form>
+        <a href="/account/<%= user.mfaEnabled ? 'mfa-disable' : 'mfa-enable' %>" class="<%= user.mfaEnabled ? 'btn-outline-rose' : 'btn-outline-sky'%> text-xs w-full sm:w-auto sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
+          <%= user.mfaEnabled ? 'Disable' : 'Enable'%>
+        </a>
       </div>
     </div>
   </section>
@@ -285,10 +275,8 @@
                 <code class="text-xs font-mono text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg flex-1 truncate">
                   <%= client.id %>
                 </code>
-                <button onclick="copyToClipboard('<%= client.id %>', this)" class="p-2 hover:bg-slate-200 rounded-lg transition-colors group/btn" title="Copy Client ID">
-                  <svg class="w-4 h-4 text-slate-600 group-hover/btn:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                  </svg>
+                <button type="button" class="copy-btn p-2 hover:bg-slate-200 rounded-lg transition-colors group/btn" data-copy-text="<%= client.id %>" title="Copy Client ID">
+                  <span class="copy-btn-label text-xs font-medium text-slate-600 group-hover/btn:text-slate-900">Copy</span>
                 </button>
               </div>
             </div>
@@ -321,18 +309,43 @@
       </div>
     </div>
 
-    <div class="space-y-3">
-      <form method="POST" action="/signout">
-        <button type="submit" class="block text-sm text-slate-900 hover:text-slate-900/70 font-semibold cursor-pointer">
-          Sign out from all devices
+    <div class="space-y-4">
+      <form method="POST" action="/signout" class="group">
+        <button type="submit" class="w-full text-left cursor-pointer">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-white/80 border border-slate-200 hover:border-slate-300 transition">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-900">Sign out from all devices</p>
+                <p class="text-xs text-slate-500 mt-1">Ends all active sessions linked to your account.</p>
+              </div>
+            </div>
+          </div>
         </button>
       </form>
 
-      <a href="/account/delete" class="block text-sm text-slate-900 hover:text-slate-900/70 font-semibold">
-        Delete account
+      <a href="/account/delete" class="block">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-white/80 border border-rose-200 hover:border-rose-300 transition">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3m-9 0h12" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-900">Delete account</p>
+              <p class="text-xs text-slate-500 mt-1">Permanently remove your account and all data.</p>
+            </div>
+          </div>
+        </div>
       </a>
-
     </div>
   </section>
 
 </div>
+
+<script src="/js/copyBtn.js" defer></script>

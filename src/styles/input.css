@@ -43,8 +43,8 @@
 
   .btn-outline-orange {
     @apply inline-flex items-center justify-center px-4 py-2 rounded-lg 
-            border border-brand-orange text-brand-border-brand-orange font-semibold 
-            hover:bg-brand-border-brand-orange transition-colors cursor-pointer;
+            border border-brand-orange text-brand-orange font-semibold 
+            hover:bg-brand-orange/10 transition-colors cursor-pointer;
   }
 
   .font-brand-hero {
