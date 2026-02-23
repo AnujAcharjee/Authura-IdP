@@ -28,26 +28,23 @@
           </span>
         </div>
 
-        <pre class="text-[10px] sm:text-[11px] lg:text-xs font-mono leading-relaxed 
-                    whitespace-pre-wrap wrap-break-words w-full">
-          <code>
-            <span class="text-sky-400">const</span> authorizeUrl = <span class="text-emerald-400">new</span> URL(
-              <span class="text-amber-400">"<%= serverUrl %>/api/oauth/authorize"</span>
-            );
+        <pre class="text-[9px] sm:text-[11px] lg:text-xs font-mono leading-snug whitespace-pre overflow-x-auto w-full">
+<code><span class="text-sky-400">const</span> authorizeUrl = <span class="text-emerald-400">new</span> URL(
+  <span class="text-amber-400">"<%= serverUrl %>/api/oauth/authorize"</span>
+);
 
-            authorizeUrl.search = <span class="text-emerald-400">new</span> URLSearchParams({
-              <span class="text-purple-400">client_id</span>: process.env.AUTH_CLIENT_ID,
-              <span class="text-purple-400">redirect_uri</span>: <span class="text-amber-400">"https://clinet.com/callback"</span>,
-              <span class="text-purple-400">response_type</span>: <span class="text-amber-400">"code"</span>,
-              <span class="text-purple-400">scope</span>: <span class="text-amber-400">"openid profile email"</span>,
-              <span class="text-purple-400">state</span>: csrfToken,
-              <span class="text-purple-400">nonce</span>: randomValue,
-              <span class="text-purple-400">code_challenge</span>: pkceChallenge,
-              <span class="text-purple-400">code_challenge_algo</span>: <span class="text-amber-400">"sha256"</span>,
-            }).toString();
+authorizeUrl.search = <span class="text-emerald-400">new</span> URLSearchParams({
+  <span class="text-purple-400">client_id</span>: process.env.AUTH_CLIENT_ID,
+  <span class="text-purple-400">redirect_uri</span>: <span class="text-amber-400">"https://client.com/callback"</span>,
+  <span class="text-purple-400">response_type</span>: <span class="text-amber-400">"code"</span>,
+  <span class="text-purple-400">scope</span>: <span class="text-amber-400">"openid profile email"</span>,
+  <span class="text-purple-400">state</span>: csrfToken,
+  <span class="text-purple-400">nonce</span>: randomValue,
+  <span class="text-purple-400">code_challenge</span>: pkceChallenge,
+  <span class="text-purple-400">code_challenge_algo</span>: <span class="text-amber-400">"sha256"</span>,
+}).toString();
 
-            res.redirect(authorizeUrl.toString());
-          </code>
+res.redirect(authorizeUrl.toString());</code>
         </pre>
       </div>
 
@@ -63,29 +60,25 @@
           </span>
         </div>
 
-        <pre class="text-[10px] sm:text-[11px] lg:text-xs font-mono leading-relaxed 
-                    whitespace-pre-wrap wrap-break-words w-full">
-          <code>
-            <span class="text-sky-400">const</span> response = <span class="text-emerald-400">await</span> fetch(
-              <span class="text-amber-400">"<%= serverUrl %>/api/oauth/token"</span>, {
-                <span class="text-purple-400">method</span>: <span class="text-amber-400">"POST"</span>,
-                <span class="text-purple-400">headers</span>: {
-                  <span class="text-amber-400">"content-type"</span>: 
-                  <span class="text-amber-400">"application/x-www-form-urlencoded"</span>,
-                },
-                <span class="text-purple-400">body</span>: <span class="text-emerald-400">new</span> URLSearchParams({
-                  <span class="text-purple-400">grant_type</span>: <span class="text-amber-400">"authorization_code"</span>,
-                  <span class="text-purple-400">code</span>,
-                  <span class="text-purple-400">code_verifier</span>: pkceVerifier,
-                  <span class="text-purple-400">client_id</span>: issued_client_id,
-                  <span class="text-purple-400">client_secret</span>: issued_client_secret,
-                }),
-              }
-            );
+        <pre class="text-[9px] sm:text-[11px] lg:text-xs font-mono leading-snug whitespace-pre overflow-x-auto w-full">
+<code><span class="text-sky-400">const</span> response = <span class="text-emerald-400">await</span> fetch(
+  <span class="text-amber-400">"<%= serverUrl %>/api/oauth/token"</span>,
+  {
+    <span class="text-purple-400">method</span>: <span class="text-amber-400">"POST"</span>,
+    <span class="text-purple-400">headers</span>: {
+      <span class="text-amber-400">"content-type"</span>: <span class="text-amber-400">"application/x-www-form-urlencoded"</span>,
+    },
+    <span class="text-purple-400">body</span>: <span class="text-emerald-400">new</span> URLSearchParams({
+      <span class="text-purple-400">grant_type</span>: <span class="text-amber-400">"authorization_code"</span>,
+      <span class="text-purple-400">code</span>,
+      <span class="text-purple-400">code_verifier</span>: pkceVerifier,
+      <span class="text-purple-400">client_id</span>: issued_client_id,
+      <span class="text-purple-400">client_secret</span>: issued_client_secret,
+    }),
+  }
+);
 
-            <span class="text-sky-400">const</span> tokens = 
-              <span class="text-emerald-400">await</span> response.json();
-          </code>
+<span class="text-sky-400">const</span> tokens = <span class="text-emerald-400">await</span> response.json();</code>
         </pre>
       </div>
 

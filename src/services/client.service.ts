@@ -102,16 +102,30 @@ export class ClientService {
   }
 
   normalizeAndValidateURI(uri: string, environment: OAuthClientEnvironment): string {
+    const trimmed = uri.trim();
+    if (!trimmed) {
+      throw new AppError('Invalid URI format', 400, ErrorCode.INVALID_REDIRECT_URI);
+    }
+    if (/\s/.test(trimmed)) {
+      throw new AppError('Invalid URI format', 400, ErrorCode.INVALID_REDIRECT_URI);
+    }
+
     let url: URL;
 
     try {
-      url = new URL(uri);
+      url = new URL(trimmed);
     } catch {
       throw new AppError('Invalid URI format', 400, ErrorCode.INVALID_REDIRECT_URI);
     }
 
     const isHttps = url.protocol === 'https:';
     const isHttp = url.protocol === 'http:';
+    if (url.username || url.password) {
+      throw new AppError('Redirect URI must not include credentials', 400, ErrorCode.INVALID_REDIRECT_URI);
+    }
+    if (url.hash) {
+      throw new AppError('Redirect URI must not include fragments', 400, ErrorCode.INVALID_REDIRECT_URI);
+    }
     const hostname = url.hostname.toLowerCase();
     const isLocalHost =
       hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
@@ -127,7 +141,7 @@ export class ClientService {
       );
     }
 
-    if (uri.includes('*')) {
+    if (trimmed.includes('*')) {
       throw new AppError('Wildcard URIs are not allowed', 400, ErrorCode.INVALID_REDIRECT_URI);
     }
 

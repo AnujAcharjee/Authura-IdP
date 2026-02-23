@@ -23,6 +23,20 @@ export class ClientController extends BaseController {
     return undefined;
   }
 
+  private validateRedirectUriInput(uri: string): string {
+    const trimmed = uri.trim();
+    if (!trimmed) {
+      throw new AppError('Redirect URI is required', 400, ErrorCode.INVALID_REDIRECT_URI);
+    }
+    if (/\s/.test(trimmed)) {
+      throw new AppError('Invalid redirect URI format', 400, ErrorCode.INVALID_REDIRECT_URI);
+    }
+    if (!/^https?:\/\//i.test(trimmed)) {
+      throw new AppError('Invalid redirect URI format', 400, ErrorCode.INVALID_REDIRECT_URI);
+    }
+    return trimmed;
+  }
+
   // ---------------- ADD CLIENT ----------------
 
   private buildAddClientViewData(req: Request) {
@@ -57,11 +71,12 @@ export class ClientController extends BaseController {
 
       const domain = this.clientService.getClientDomain(slug);
 
+      const sanitizedRedirectUri = this.validateRedirectUriInput(redirect_uri);
       const data = await this.clientService.createClient({
         userId: req.user.id,
         name,
         domain,
-        redirectURI: redirect_uri,
+        redirectURI: sanitizedRedirectUri,
         clientType: client_type || OAUTH_CLIENT_TYPES.CONFIDENTIAL,
         environment: client_environment || OAUTH_CLIENT_ENVIRONMENTS.DEVELOPMENT,
       });
@@ -133,36 +148,50 @@ export class ClientController extends BaseController {
       throw new AppError('Invalid request', 400, ErrorCode.INVALID_REQUEST);
     }
 
-    if (!['add', 'del'].includes(action)) {
-      throw new AppError('Invalid action', 400, ErrorCode.INVALID_REQUEST);
-    }
-
-    const client = await this.clientService.getClient(client_id);
-
-    const normalizedURI = this.clientService.normalizeAndValidateURI(redirect_uri, client.environment);
-
-    const exists = client.redirectURIs.includes(normalizedURI);
-
-    if (action === 'add') {
-      if (exists) {
-        throw new AppError('Redirect URI already exists', 400, ErrorCode.INVALID_REDIRECT_URI);
+    try {
+      if (!['add', 'del'].includes(action)) {
+        throw new AppError('Invalid action', 400, ErrorCode.INVALID_REQUEST);
       }
 
-      await this.clientService.addRedirectURI({
-        clientId: client_id,
-        normalizedURI,
-        existingRedirectURIs: client.redirectURIs,
-      });
-    } else {
-      if (!exists) {
-        throw new AppError('Redirect URI does not exist', 400, ErrorCode.INVALID_REDIRECT_URI);
-      }
+      const client = await this.clientService.getClient(client_id);
 
-      await this.clientService.deleteRedirectURI({
-        clientId: client_id,
-        normalizedURI,
-        existingRedirectURIs: client.redirectURIs,
-      });
+      const sanitizedRedirectUri = this.validateRedirectUriInput(redirect_uri);
+      const normalizedURI = this.clientService.normalizeAndValidateURI(
+        sanitizedRedirectUri,
+        client.environment,
+      );
+
+      const exists = client.redirectURIs.includes(normalizedURI);
+
+      if (action === 'add') {
+        if (exists) {
+          throw new AppError('Redirect URI already exists', 400, ErrorCode.INVALID_REDIRECT_URI);
+        }
+
+        await this.clientService.addRedirectURI({
+          clientId: client_id,
+          normalizedURI,
+          existingRedirectURIs: client.redirectURIs,
+        });
+      } else {
+        if (!exists) {
+          throw new AppError('Redirect URI does not exist', 400, ErrorCode.INVALID_REDIRECT_URI);
+        }
+
+        await this.clientService.deleteRedirectURI({
+          clientId: client_id,
+          normalizedURI,
+          existingRedirectURIs: client.redirectURIs,
+        });
+      }
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.redirect(
+          303,
+          `/client/${client_id}?error=${encodeURIComponent(error.message)}`,
+        );
+      }
+      throw error;
     }
 
     return res.redirect(303, `/client/${client_id}`);
