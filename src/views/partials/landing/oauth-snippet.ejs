@@ -1,94 +1,93 @@
-<section id="oauth-flow" class="relative">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+<section id="oauth-flow" class="relative overflow-x-hidden">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14">
 
-    <!-- Heading + Description -->
+    <!-- Heading -->
     <div class="max-w-3xl">
-      <p class="text-sm font-semibold text-brand-orange tracking-wide uppercase">
+      <p class="text-[11px] sm:text-xs font-semibold text-brand-orange tracking-wide uppercase">
         OAuth 2.0 Flow
       </p>
 
-      <p class="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-        Pramaan uses the OAuth 2.0 Authorization Code flow with PKCE to securely
-        authenticate users and issue tokens to your application. Users are redirected
-        to Pramaan for login and consent, while your backend performs the token exchange.
-        Sensitive credentials and tokens are never exposed to the browser, ensuring a
-        secure and standards-compliant authentication flow.
+      <p class="mt-3 text-[11px] sm:text-xs lg:text-sm text-slate-600 leading-relaxed">
+        Pramaan uses the Authorization Code flow with PKCE to securely authenticate users.
+        Tokens are exchanged server-side and never exposed to the browser.
       </p>
     </div>
 
-    <!-- Code Blocks -->
-    <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Grid -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-5">
 
       <!-- Step 1 -->
-      <div class="relative rounded-3xl bg-slate-900 text-slate-100 p-6 shadow-xl flex flex-col">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Step 1 · Redirect the user to Pramaan
+      <div class="rounded-2xl bg-slate-900 text-slate-100 p-4 shadow-lg flex flex-col">
+
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            Step 1 · Redirect User
           </span>
-          <span class="text-xs text-orange-300">Browser</span>
+          <span class="text-[9px] sm:text-[10px] text-emerald-300">
+            Client
+          </span>
         </div>
 
-        <div class="flex-1 flex items-center justify-center">
-          <pre class="text-xs sm:text-sm font-mono leading-relaxed overflow-x-auto text-left w-full max-w-lg">
-            <code>
-              <span class="text-sky-400">const</span> authorizeUrl = <span class="text-emerald-400">new</span> URL(
-                <span class="text-amber-400">"<%= serverUrl %>/api/v1/oauth/authorize"</span>
-              );
+        <pre class="text-[10px] sm:text-[11px] lg:text-xs font-mono leading-relaxed 
+                    whitespace-pre-wrap wrap-break-words w-full">
+          <code>
+            <span class="text-sky-400">const</span> authorizeUrl = <span class="text-emerald-400">new</span> URL(
+              <span class="text-amber-400">"<%= serverUrl %>/api/oauth/authorize"</span>
+            );
 
-              authorizeUrl.search = <span class="text-emerald-400">new</span> URLSearchParams({
-                <span class="text-purple-400">client_id</span>: process.env.AUTH_CLIENT_ID,
-                <span class="text-purple-400">redirect_uri</span>: <span class="text-amber-400">"https://yourdomain.com/callback"</span>,
-                <span class="text-purple-400">response_type</span>: <span class="text-amber-400">"code"</span>,
-                <span class="text-purple-400">scope</span>: <span class="text-amber-400">"openid profile email"</span>,
-                <span class="text-purple-400">state</span>: csrfToken,
-                <span class="text-purple-400">nonce</span>: randomValue,
-                <span class="text-purple-400">code_challenge</span>: pkceChallenge,
-                <span class="text-purple-400">code_challenge_algo</span>: <span class="text-amber-400">"S256"</span>,
-              }).toString();
+            authorizeUrl.search = <span class="text-emerald-400">new</span> URLSearchParams({
+              <span class="text-purple-400">client_id</span>: process.env.AUTH_CLIENT_ID,
+              <span class="text-purple-400">redirect_uri</span>: <span class="text-amber-400">"https://clinet.com/callback"</span>,
+              <span class="text-purple-400">response_type</span>: <span class="text-amber-400">"code"</span>,
+              <span class="text-purple-400">scope</span>: <span class="text-amber-400">"openid profile email"</span>,
+              <span class="text-purple-400">state</span>: csrfToken,
+              <span class="text-purple-400">nonce</span>: randomValue,
+              <span class="text-purple-400">code_challenge</span>: pkceChallenge,
+              <span class="text-purple-400">code_challenge_algo</span>: <span class="text-amber-400">"sha256"</span>,
+            }).toString();
 
-              res.redirect(authorizeUrl.toString());
-            </code>
-          </pre>
-        </div>
+            res.redirect(authorizeUrl.toString());
+          </code>
+        </pre>
       </div>
-
-
 
       <!-- Step 2 -->
-      <div class="relative rounded-3xl bg-slate-900 text-slate-100 p-6 shadow-xl flex flex-col">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Step 2 · Exchange the authorization code for tokens
+      <div class="rounded-2xl bg-slate-900 text-slate-100 p-4 shadow-lg flex flex-col">
+
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            Step 2 · Exchange Code
           </span>
-          <span class="text-xs text-emerald-300">Server</span>
+          <span class="text-[9px] sm:text-[10px] text-emerald-300">
+            Client
+          </span>
         </div>
 
-        <div class="flex-1 flex items-center justify-center">
-          <pre class="text-xs sm:text-sm font-mono leading-relaxed overflow-x-auto text-left w-full max-w-lg">
-            <code>
-              <span class="text-sky-400">const</span> response = <span class="text-emerald-400">await</span> fetch(
-                <span class="text-amber-400">"<%= serverUrl %>/api/v1/oauth/token"</span>, {
-                  <span class="text-purple-400">method</span>: <span class="text-amber-400">"POST"</span>,
-                  <span class="text-purple-400">headers</span>: {
-                    <span class="text-amber-400">"content-type"</span>: <span class="text-amber-400">"application/x-www-form-urlencoded"</span>,
-                  },
-                  <span class="text-purple-400">body</span>: 
-                    <span class="text-emerald-400">new</span> URLSearchParams({
-                      <span class="text-purple-400">grant_type</span>: <span class="text-amber-400">"authorization_code"</span>,
-                      <span class="text-purple-400">client_id</span>: issued_client_id,
-                      <span class="text-purple-400">client_secret</span>: issued_client_secret,
-                      <span class="text-purple-400">code</span>, // authorizationCode,
-                      <span class="text-purple-400">code_verifier</span>: pkceVerifier,
-                    }),
-                }
-              );
+        <pre class="text-[10px] sm:text-[11px] lg:text-xs font-mono leading-relaxed 
+                    whitespace-pre-wrap wrap-break-words w-full">
+          <code>
+            <span class="text-sky-400">const</span> response = <span class="text-emerald-400">await</span> fetch(
+              <span class="text-amber-400">"<%= serverUrl %>/api/oauth/token"</span>, {
+                <span class="text-purple-400">method</span>: <span class="text-amber-400">"POST"</span>,
+                <span class="text-purple-400">headers</span>: {
+                  <span class="text-amber-400">"content-type"</span>: 
+                  <span class="text-amber-400">"application/x-www-form-urlencoded"</span>,
+                },
+                <span class="text-purple-400">body</span>: <span class="text-emerald-400">new</span> URLSearchParams({
+                  <span class="text-purple-400">grant_type</span>: <span class="text-amber-400">"authorization_code"</span>,
+                  <span class="text-purple-400">code</span>,
+                  <span class="text-purple-400">code_verifier</span>: pkceVerifier,
+                  <span class="text-purple-400">client_id</span>: issued_client_id,
+                  <span class="text-purple-400">client_secret</span>: issued_client_secret,
+                }),
+              }
+            );
 
-              <span class="text-sky-400">const</span> tokens = <span class="text-emerald-400">await</span> response.json();
-            </code>
-          </pre>
-        </div>
+            <span class="text-sky-400">const</span> tokens = 
+              <span class="text-emerald-400">await</span> response.json();
+          </code>
+        </pre>
       </div>
-
 
     </div>
   </div>

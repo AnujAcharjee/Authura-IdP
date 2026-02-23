@@ -23,16 +23,28 @@
             hover:bg-sky-100 transition-colors cursor-pointer;
   }
 
-  .btn-outline-red {
+  .btn-outline-rose {
     @apply inline-flex items-center justify-center px-4 py-2 rounded-lg 
-            border border-red-500 text-red-500/90 font-semibold 
-            hover:bg-red-100 transition-colors cursor-pointer;
+            border border-rose-500 text-rose-500/90 font-semibold 
+            hover:bg-rose-100 transition-colors cursor-pointer;
   }
 
   .btn-outline-green {
     @apply inline-flex items-center justify-center px-4 py-2 rounded-lg 
             border border-green-500 text-green-500/90 font-semibold 
             hover:bg-green-100 transition-colors cursor-pointer;
+  }
+
+  .btn-outline-gray {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg 
+            border border-gray-500 text-gray-500/90 font-semibold 
+            hover:bg-gray-100 transition-colors cursor-pointer;
+  }
+
+  .btn-outline-orange {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg 
+            border border-brand-orange text-brand-border-brand-orange font-semibold 
+            hover:bg-brand-border-brand-orange transition-colors cursor-pointer;
   }
 
   .font-brand-hero {

@@ -30,24 +30,36 @@
       </div>
 
       <!-- User Info -->
-      <div class="flex-1">
-        <div class="flex flex-wrap items-center gap-3 mb-2">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 wrap-break-words"><%= user.name %></h2>
-          <%- include("../../../partials/ui/badge", {
-            variant: "success",
-            text: "Verified",
-            size: "sm"
-          }) %>
+      <div class="flex-1 min-w-0">
+
+        <!-- Name -->
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 wrap-break-words">
+          <%= user.name %>
+        </h2>
+
+        <!-- Email + Verified -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-slate-600 break-all">
+            <%= user.email %>
+          </span>
+
+          <% if(user.isEmailVerified) { %>
+          <span class="px-1 py-0.5 rounded-2xl bg-green-200/70">
+            <svg class="w-4 h-4 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
+          <% } %>
         </div>
 
-        <p class="text-slate-600 mb-3"><%= user.email %></p>
-
-        <div class="flex items-center gap-2 text-sm text-slate-500">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Joined Date -->
+        <div class="flex items-center gap-2 text-sm text-slate-500 mt-3">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span>Joined <%= createdAtFormatted %></span>
         </div>
+
       </div>
     </div>
   </section>
@@ -94,8 +106,7 @@
           <!-- Resend -->
           <form method="POST" action="/account/change-password">
             <input type="hidden" name="email" value="<%= user.email %>" />
-            <button type="submit" class="px-5 py-2.5 rounded-lg border border-sky-500 text-sky-600
-             hover:bg-sky-50 transition font-medium">
+            <button type="submit" class="btn-outline-sky text-xs w-full sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
               Resend
             </button>
           </form>
@@ -104,7 +115,7 @@
         <% } else { %>
         <form method="POST" action="/account/change-password">
           <input type="hidden" name="email" value="<%= user.email %>" />
-          <button type="submit" class="btn-outline-sky">
+          <button type="submit" class="btn-outline-sky text-xs w-full sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
             Reset
           </button>
         </form>
@@ -138,7 +149,7 @@
 
         <form method="POST" action="/account/mfa">
           <input type="hidden" name="action" value="<%= user.mfaEnabled ? 'disable' : 'enable' %>" />
-          <button type="submit" class="<%= user.mfaEnabled ? 'btn-outline-red' : 'btn-outline-sky'%>">
+          <button type="submit" class="<%= user.mfaEnabled ? 'btn-outline-rose' : 'btn-outline-sky'%> text-xs w-full sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
             <%= user.mfaEnabled ? 'Disable' : 'Enable'%>
           </button>
         </form>
@@ -197,11 +208,15 @@
             <% } %>
           </div>
           <% if (consent.revokedAt) { %>
-          <a href="/account/reissue-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" class="inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 px-3 py-1.5 text-xs rounded-md bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 focus:ring-orange-500/30">
+          <a 
+          href="/account/reissue-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" 
+          class="btn-outline-sky">
             Reissue
           </a>
           <% } else { %>
-          <a href="/account/revoke-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" class="inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 px-3 py-1.5 text-xs rounded-md bg-linear-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-red-500/30 shadow-sm hover:shadow-md">
+          <a 
+          href="/account/revoke-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>"
+          class="btn-outline-gray">
             Revoke
           </a>
           <% } %>
