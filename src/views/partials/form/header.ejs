@@ -1,14 +1,18 @@
-<div class="space-y-4 mb-8">
+<div class="space-y-2 mb-8">
   <!-- Logo Icon -->
 
   <!-- Title -->
-  <h1 class="text-3xl font-bold text-slate-900 tracking-tight">
-    <%= title ? title : null %>
-  </h1>
+  <div class="relative inline-block">
+    <div class="absolute inset-0 blur-3xl bg-orange-400 opacity-40"></div>
+
+    <h1 class="relative font-brand-hero text-3xl font-semibold tracking-tight text-slate-900">
+      <%= title ? title : null %>
+    </h1>
+  </div>
 
   <!-- Subtitle -->
   <% if (typeof subtitle !== 'undefined' && subtitle) { %>
-  <p class="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+  <p class="text-sm ml-1 text-slate-600 max-w-md leading-relaxed">
     <%= subtitle %>
   </p>
   <% } %>
