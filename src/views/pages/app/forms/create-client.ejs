@@ -6,8 +6,8 @@
     <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/60 p-8 sm:p-10">
 
       <%- include("../../../partials/form/header", {
-        title: "Create New Application",
-        subtitle: "Set up OAuth credentials and configure access for your application."
+        title: "Create New Client",
+        subtitle: "Set up OAuth credentials and configure access for your client."
       }) %>
 
       <%- include("../../../partials/alert", {success, error}) %>
@@ -18,22 +18,22 @@
           id: "name",
           name: "name",
           type: "text",
-          label: "Application Name",
+          label: "Client Name",
           placeholder: "My Awesome App",
           required: true,
           autocomplete: "name",
-          helperText: "A friendly name to identify your application"
+          helperText: "A friendly name to identify your client"
         }) %>
 
         <%- include("../../../partials/form/input", {
           id: "slug",
           name: "slug",
           type: "text",
-          label: "Application Domain",
-          placeholder: "myapp",
+          label: "Client Domain",
+          placeholder: "clientapp",
           required: true,
           autocomplete: "slug",
-          helperText: "This will be used as: myapp.pramaan.com"
+          helperText: "This will be used as: clientapp.pramaan.com"
         }) %>
 
         <%- include("../../../partials/form/select", {
@@ -79,7 +79,7 @@
             </svg>
             <div class="flex-1">
               <p class="text-sm font-semibold text-sky-900">What happens next?</p>
-              <p class="text-xs text-sky-800 mt-1">After creating your application, you'll receive a Client ID and optionally a Client Secret for authentication.</p>
+              <p class="text-xs text-sky-800 mt-1">After creating your client, you'll receive a Client ID and optionally a Client Secret for authentication.</p>
             </div>
           </div>
         </div>
@@ -89,7 +89,7 @@
             Cancel
           </a>
 
-          <button type="submit" class="btn-orange">Create Application</button>
+          <button type="submit" class="btn-orange">Create client</button>
         </div>
 
       </form>

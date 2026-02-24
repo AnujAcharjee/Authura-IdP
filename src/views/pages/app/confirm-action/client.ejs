@@ -21,12 +21,12 @@
 
   const confirmText =
     isDelete
-      ? 'Delete Application'
+      ? 'Delete Client'
       : isActivate
-        ? 'Activate Application'
+        ? 'Activate Client'
         : isEnvironment
           ? `Switch to ${_targetEnvironment === 'production' ? 'Production' : 'Development'}`
-          : 'Deactivate Application';
+          : 'Deactivate Client';
 %>
 
 <div class="max-w-3xl mx-auto py-10 space-y-8">
@@ -54,12 +54,12 @@
       <div>
         <h1 class="text-xl font-semibold text-slate-900">
           <%= isDelete
-              ? 'Delete Application'
+              ? 'Delete Client'
               : isActivate
-                ? 'Activate Application'
+                ? 'Activate Client'
                 : isEnvironment
                   ? 'Switch Environment'
-                  : 'Deactivate Application' %>
+                  : 'Deactivate Client' %>
         </h1>
         <p class="text-sm text-slate-500 mt-1">
           Please confirm this action.
@@ -80,7 +80,7 @@
       </p>
       <% } else if (isActivate) { %>
       <p class="text-sm text-slate-600">
-        The application will be re-enabled for OAuth authorization and token requests.
+        The client will be re-enabled for OAuth authorization and token requests.
       </p>
       <% } else if (isEnvironment) { %>
       <p class="text-sm text-slate-600">
@@ -106,7 +106,7 @@
       <% } %>
       <% } else { %>
       <p class="text-sm text-slate-600">
-        The application will stop accepting OAuth authorization and token requests.
+        The client will stop accepting OAuth authorization and token requests.
         It can be reactivated later.
       </p>
       <% } %>
@@ -115,7 +115,7 @@
     <!-- App Info -->
     <div class="rounded-xl bg-slate-50 border border-slate-200 p-5 mb-8">
       <p class="text-xs uppercase tracking-wide text-slate-500 mb-2">
-        Application
+        Client
       </p>
       <p class="text-sm font-semibold text-slate-900">
         <%= name %>

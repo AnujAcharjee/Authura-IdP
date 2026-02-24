@@ -33,10 +33,10 @@
   <!-- Page Header -->
   <div class="px-2">
     <h1 class="text-xl sm:text-3xl font-bold text-slate-900">
-      Application Dashboard
+      Client Dashboard
     </h1>
     <p class="text-slate-600 text-sm sm:text-xl mt-1">
-      Manage your OAuth application settings
+      Manage your OAuth client settings
     </p>
   </div>
 
@@ -84,7 +84,7 @@
 
       <div class="bg-sky-50/50 border border-sky-200 rounded-xl p-4">
         <p class="text-sm text-sky-800">
-          <span class="font-semibold">💡 Tip:</span> Use this Client ID to identify your application during OAuth authorization and token requests.
+          <span class="font-semibold">💡 Tip:</span> Use this Client ID to identify your client app during OAuth authorization and token requests.
         </p>
       </div>
     </div>
@@ -124,7 +124,7 @@
               </span>
             </div>
             <p class="text-xs text-slate-500 mt-2 max-w-md">
-              Determines how this application authenticates with the authorization server.
+              Determines how this client authenticates with the authorization server.
             </p>
           </div>
         </div>
@@ -399,7 +399,7 @@
 
         <div>
           <p class="text-sm font-semibold text-slate-900">
-            <%= client.isActive ? "Disable Application" : "Activate Application" %>
+            <%= client.isActive ? "Disable Client" : "Activate Client" %>
           </p>
           <p class="text-xs text-slate-500 mt-1">
             <%= client.isActive 
@@ -426,7 +426,7 @@
 
         <div>
           <p class="text-sm font-semibold text-slate-900">
-            Delete Application
+            Delete Client
           </p>
           <p class="text-xs text-slate-500 mt-1">
             Permanently remove this client and all associated configuration.

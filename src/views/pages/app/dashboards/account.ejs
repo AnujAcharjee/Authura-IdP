@@ -14,7 +14,7 @@
   <div class="gap-2 hidden sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Dashboard</h1>
-      <p class="text-slate-600 mt-1">Manage your account and applications</p>
+      <p class="text-slate-600 mt-1">Manage your account and clients</p>
     </div>
   </div>
 
@@ -110,7 +110,7 @@
         </div>
         <% } else { %>
         <a href="/account/change-password" class="btn-outline-sky text-xs w-full sm:w-auto sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
-            Reset Password
+          Reset Password
         </a>
         <% } %>
       </div>
@@ -155,7 +155,13 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       </div>
-      <h2 class="text-xl font-bold text-slate-900">OAuth Consents</h2>
+
+      <div>
+        <h2 class="text-xl font-bold text-slate-900">OAuth Consents</h2>
+        <p class="text-sm text-slate-600 max-w-55 sm:max-w-md">
+          Applications you’ve authorized. You can revoke access at any time.
+        </p>
+      </div>
     </div>
 
     <% if (oauthConsents.length === 0) { %>
@@ -164,7 +170,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
       <p class="text-slate-500 font-medium">No OAuth consents yet</p>
-      <p class="text-sm text-slate-400 mt-1">Authorized applications will appear here</p>
+      <p class="text-sm text-slate-400 mt-1">Authorized client applications will appear here</p>
     </div>
     <% } else { %>
     <div class="space-y-3">
@@ -178,7 +184,7 @@
                     variant: consent.revokedAt ? "danger" : "info",
                     text: consent.revokedAt ? "Revoked" : "Active",
                     size: "sm"
-                  }) %>
+              }) %>
             </div>
             <div class="flex flex-wrap gap-2">
               <% consent.scopes.forEach(scope => { %>
@@ -198,15 +204,11 @@
             <% } %>
           </div>
           <% if (consent.revokedAt) { %>
-          <a 
-          href="/account/reissue-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" 
-          class="btn-outline-sky">
+          <a href="/account/reissue-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" class="btn-outline-sky">
             Reissue
           </a>
           <% } else { %>
-          <a 
-          href="/account/revoke-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>"
-          class="btn-outline-gray">
+          <a href="/account/revoke-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" class="btn-outline-gray">
             Revoke
           </a>
           <% } %>
@@ -217,28 +219,54 @@
     <% } %>
   </section>
 
-  <!-- Applications Section -->
+  <!-- Client Section -->
   <section class="dashboard-section">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-      <div class="flex items-start sm:items-center gap-3">
-        <div class="dashboard-icon">
+
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between mb-8">
+
+      <!-- Left Section -->
+      <div class="flex items-start gap-3 sm:gap-4">
+
+        <!-- Icon -->
+        <div class="dashboard-icon bg-slate-900 p-2 rounded-xl shrink-0">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
           </svg>
         </div>
-        <div>
-          <h2 class="text-xl font-bold text-slate-900">Applications</h2>
-          <p class="text-sm text-slate-600">Manage your OAuth applications</p>
+
+        <!-- Text Content -->
+        <div class="min-w-0">
+
+          <!-- Title + Badge -->
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">
+              Registered Clients
+            </h2>
+
+            <%- include("../../../partials/ui/badge", {
+              variant: "warning",
+              text: "Developer Section",
+              size: "sm"
+        }) %>
+          </div>
+
+          <!-- Description -->
+          <p class="text-sm text-slate-600 mt-2 max-w-md">
+            Client applications you’ve registered that use Pramaan for authentication.
+          </p>
         </div>
       </div>
+
+      <!-- Right: Action Button -->
       <% if (clients.length !== 0) { %>
-      <a href="/create-client" class="btn-orange py-3">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <a href="/create-client" class="btn-orange py-3 w-full sm:w-auto text-center">
+        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Add Application
+        Create OAuth Client
       </a>
       <% } %>
+
     </div>
 
     <% if (clients.length === 0) { %>
@@ -248,10 +276,10 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
       </div>
-      <p class="text-slate-700 font-semibold mb-1">No applications yet</p>
-      <p class="text-sm text-slate-500 mb-6">Create your first OAuth application to get started</p>
+      <p class="text-slate-700 font-semibold mb-1">No clients yet</p>
+      <p class="text-sm text-slate-500 mb-6">Create your first OAuth client to get started</p>
       <a href="/create-client" class="btn-orange">
-        Create Application
+        Create Client
       </a>
     </div>
     <% } else { %>
