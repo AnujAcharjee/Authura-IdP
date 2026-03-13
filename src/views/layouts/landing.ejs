@@ -3,9 +3,39 @@
 
 <head>
   <%- partial("../partials/head", { title }) %>
-</head>
 
-<script src="/js/navbar.js" defer></script>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= title ?? "Pramaan - Secure Identity Provider" %>">
+  <meta property="og:description" content="Authenticate users securely with Pramaan identity platform.">
+  <meta property="og:url" content="https://pramaan.anujacharjee.com/">
+  <meta property="og:image" content="https://pramaan.anujacharjee.com/images/landing-preview.png">
+  <meta property="og:site_name" content="Pramaan">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= title ?? "Pramaan - Secure Identity Provider" %>" <meta name="twitter:description" content="Authenticate users securely with Pramaan identity platform.">
+  <meta name="twitter:image" content="https://pramaan.anujacharjee.com/images/landing-preview.png">
+  <meta name="twitter:creator" content="@anuj_304">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Pramaan",
+      "url": "https://pramaan.anujacharjee.com",
+      "description": "Modern OAuth 2.0 and OpenID Connect identity provider.",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Web",
+      "creator": {
+        "@type": "Person",
+        "name": "Anuj Acharjee"
+      }
+    } <
+    /head>
+
+    <
+    script src = "/js/navbar.js"
+    defer >
+  </script>
 
 <body class="min-h-screen bg-linear-to-br from-white via-orange-50/40 to-amber-50/40 text-slate-900 antialiased overflow-x-hidden">
 
