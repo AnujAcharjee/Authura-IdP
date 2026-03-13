@@ -16,13 +16,13 @@ const options: RedisOptions = {
 
 const redis = new Redis(options);
 
-redis.on('connect', () => {
-  logger.info('Redis socket connected');
-});
+// redis.on('connect', () => {
+//   logger.info('Redis socket connected');
+// });
 
-redis.on('ready', () => {
-  logger.info('Redis ready');
-});
+// redis.on('ready', () => {
+//   logger.info('Redis ready');
+// });
 
 redis.on('error', (error) => {
   logger.error('Redis error', { error });
