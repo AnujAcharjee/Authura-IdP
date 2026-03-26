@@ -19,7 +19,7 @@ export const setupSecurityHeaders = (app: Express) => {
           imgSrc: ["'self'", 'data:', 'https:'], // allow avatars, logos, QR codes
           fontSrc: ["'self'", 'https:', 'data:'], // allow embedded web fonts
 
-          connectSrc: ["'self'", "https:"], // restrict XHR / fetch / OAuth calls
+          connectSrc: ["'self'", 'https:'], // restrict XHR / fetch / OAuth calls
 
           objectSrc: ["'none'"], // block Flash, plugins, embeds
           frameAncestors: ["'none'"], // prevent clickjacking

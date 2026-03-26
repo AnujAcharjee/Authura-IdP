@@ -17,10 +17,7 @@ export class ClientZSchema {
         .optional(),
       client_environment: z
         .enum(
-          Object.values(OAUTH_CLIENT_ENVIRONMENTS) as [
-            OAuthClientEnvironment,
-            ...OAuthClientEnvironment[],
-          ],
+          Object.values(OAUTH_CLIENT_ENVIRONMENTS) as [OAuthClientEnvironment, ...OAuthClientEnvironment[]],
         )
         .optional(),
       redirect_uri: UtilFields.redirectUriField,
@@ -58,10 +55,7 @@ export class ClientZSchema {
     body: z.object({
       environment: z
         .enum(
-          Object.values(OAUTH_CLIENT_ENVIRONMENTS) as [
-            OAuthClientEnvironment,
-            ...OAuthClientEnvironment[],
-          ],
+          Object.values(OAUTH_CLIENT_ENVIRONMENTS) as [OAuthClientEnvironment, ...OAuthClientEnvironment[]],
         )
         .optional(),
     }),

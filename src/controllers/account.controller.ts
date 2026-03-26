@@ -56,10 +56,7 @@ export class AccountController extends BaseController {
 
     await this.authService.initiateResetPassword(user.email, 'default');
 
-    return res.redirect(
-      303,
-      `/account?success=${encodeURIComponent('Password reset email sent')}`,
-    );
+    return res.redirect(303, `/account?success=${encodeURIComponent('Password reset email sent')}`);
   });
 
   manageMfa = this.handleViewRequest(async (req, res) => {

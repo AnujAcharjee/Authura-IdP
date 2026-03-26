@@ -11,7 +11,6 @@ This guide explains how to implement a complete OAuth 2.0 + OIDC sign-up/login f
 
 This document focuses strictly on the implementation flow.
 
-
 ## Step 1: Generate OAuth Security Parameters
 
 Before redirecting users to Pramaan, generate security parameters:
@@ -58,7 +57,6 @@ export function generateOAuthParameters() {
 }
 ```
 
-
 ## Step 2: Redirect to Pramaan Authorization Endpoint
 
 ```typescript
@@ -79,7 +77,6 @@ function buildAuthorizationUrl(state: string, nonce: string, codeChallenge: stri
 ```
 
 Redirect the browser to this URL.
-
 
 ## Step 3: Handle Callback
 
@@ -102,7 +99,6 @@ app.get('/oauth/callback', async (req, res) => {
   // Continue to token exchange
 });
 ```
-
 
 ## Step 4: Exchange Authorization Code for Tokens
 
@@ -128,7 +124,6 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string) {
 }
 ```
 
-
 ## Step 5: Verify ID Token
 
 ```typescript
@@ -150,7 +145,6 @@ async function verifyIdToken(idToken: string, nonce: string) {
   return verified.payload;
 }
 ```
-
 
 ## Step 6: Create or Update User
 
@@ -206,7 +200,6 @@ If the ID token does not contain all required user attributes:
 
 The Access Token is meant for protected resource access — not session management.
 
-
 ## Step 7: Create Application Session
 
 After linking or creating the user, generate your own application session.
@@ -233,7 +226,6 @@ res.cookie('session', sessionToken, {
 
 ⚠ Do not use OAuth access tokens as your application session.  
 Always create your own session mechanism.
-
 
 ## Complete Flow
 

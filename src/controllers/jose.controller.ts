@@ -3,9 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type { JoseService } from '../services/jose.service.js';
 
 export class JoseController extends BaseController {
-  constructor(
-    private joseService: JoseService,
-  ) {
+  constructor(private joseService: JoseService) {
     super();
   }
 

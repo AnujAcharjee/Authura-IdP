@@ -28,7 +28,7 @@ router.get(
 
 // is an ui router
 router
-  .route('/oauth/consent') 
+  .route('/oauth/consent')
   .get(Authentication.ssr('oauth'), Authorize.role([ROLES.USER]), oauthController.renderConsentPage)
   .post(
     Authentication.ssr('oauth'),

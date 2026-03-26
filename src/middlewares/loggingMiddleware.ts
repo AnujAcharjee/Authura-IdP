@@ -1,32 +1,31 @@
-import type { Request, Response, NextFunction } from "express";
-import { logger } from "../config/logger.js";
+import type { Request, Response, NextFunction } from 'express';
+import { logger } from '../config/logger.js';
+import { ENV } from '../config/env.js';
 
-export const loggingMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const loggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  if (ENV.NODE_ENV === 'production') return;
+
   const startTime = Date.now();
 
-  res.on("finish", () => {
+  res.on('finish', () => {
     const logData = {
       requestId: req.requestId,
       method: req.method,
       url: req.originalUrl,
       status: res.statusCode,
       duration: `${Date.now() - startTime}ms`,
-      userAgent: req.get("user-agent"),
+      userAgent: req.get('user-agent'),
       ip: req.ip,
-      context: "HttpRequest",
+      context: 'HttpRequest',
       userId: req.user?.id,
       query: Object.keys(req.query).length ? req.query : undefined,
       body: Object.keys(req.body || {}).length ? req.body : undefined,
     };
 
     if (res.statusCode >= 400) {
-      logger.error("Request failed", logData);
+      logger.error('Request failed', logData);
     } else {
-      logger.info("Request completed", logData);
+      logger.info('Request completed', logData);
     }
   });
 

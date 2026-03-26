@@ -1,6 +1,5 @@
 # Pramaan — Identity Provider
 
-
 **Pramaan** is an OAuth 2.0 and OpenID Connect (OIDC) compliant Identity Provider (IdP) designed to provide secure, standards-based authentication and authorization for web, mobile, and backend applications.
 
 OAuth 2.0 and OpenID Connect are complementary industry standards that solve different but related security challenges in modern distributed systems.
@@ -17,11 +16,9 @@ Pramaan acts as a centralized trust authority — issuing tokens, managing user 
 
 🌐 **Website:** https://pramaan.anujacharjee.com
 
-
 # 🚀 Getting Started
 
 Follow these steps to integrate Pramaan into your application.
-
 
 ## 1. Create Your First OAuth Client
 
@@ -48,18 +45,16 @@ Integrate Pramaan using:
 📄 **Guide:**  
 [Implementation Guide](./docs/02-signup-flow.md)
 
-
 # 📁 Documentation Structure
 
 ```
 root/
 ├── README.md
 └── docs/
-    ├── test-app               
+    ├── test-app
     ├── 01-create-client.md
     └── 02-signup-flow.md
 ```
-
 
 # 🧪 Test Client (Sample Application)
 
@@ -67,8 +62,6 @@ A fully working reference client is included to help you test the complete OAuth
 You can clone and run the test client locally.
 
 For detailed setup instructions, click [more](https://github.com/AnujAcharjee/pramaan/tree/main/docs/test-app/README.md)
-
-
 
 # 🔐 OAuth Tokens vs Application Sessions
 
@@ -83,7 +76,6 @@ Understanding this distinction is critical.
 ⚠ Never use OAuth tokens as your application session.
 
 After successful authentication, create your own session mechanism.
-
 
 # 🛠 Common Issues & Solutions
 
@@ -110,7 +102,6 @@ Verify:
 
 Use refresh token or require re-authentication.
 
-
 # 🏗 Production Checklist
 
 - HTTPS enabled for all redirect URIs
@@ -123,7 +114,6 @@ Use refresh token or require re-authentication.
 - CSRF protection enabled
 - XSS protection enabled
 - Proper logging & monitoring configured
-
 
 # 🔒 Security Best Practices
 
