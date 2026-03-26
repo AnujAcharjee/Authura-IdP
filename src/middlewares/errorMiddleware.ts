@@ -11,7 +11,11 @@ import type { ErrorRequestHandler } from 'express';
  *  - send JSON res
  */
 
-export const errorMiddleware: ErrorRequestHandler = (error, req, res, _next): void => {
+export const errorMiddleware: ErrorRequestHandler = (error, req, res, next): void => {
+  if (res.headersSent) {
+    return next(error);
+  }
+
   const isAppError = error instanceof AppError;
   const statusCode = isAppError ? error.statusCode : 500;
   const message = isAppError ? error.message : 'Internal server error';

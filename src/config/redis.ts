@@ -8,17 +8,18 @@ const options: RedisOptions = {
   port: ENV.REDIS_PORT,
   password: ENV.REDIS_PASSWORD,
   db: 0,
-  tls: {},
+  ...(ENV.REDIS_TLS_ENABLED ? { tls: {} } : {}),
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
+  enableOfflineQueue: false,
   connectTimeout: 10_000,
 };
 
 const redis = new Redis(options);
 
-// redis.on('connect', () => {
-//   logger.info('Redis socket connected');
-// });
+redis.on('connect', () => {
+  logger.info('Redis socket connected');
+});
 
 // redis.on('ready', () => {
 //   logger.info('Redis ready');

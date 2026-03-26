@@ -26,6 +26,15 @@ const seconds = (name: string) =>
       message: `${name} must be greater than 0`,
     });
 
+const booleanFromString = (name: string) =>
+  z
+    .string({ error: `${name} is required` })
+    .transform((v) => v.trim().toLowerCase())
+    .refine((v) => v === 'true' || v === 'false', {
+      message: `${name} must be true or false`,
+    })
+    .transform((v) => v === 'true');
+
 const url = (name: string) =>
   z.url({
     message: `${name} must be a valid URL`,
@@ -59,6 +68,7 @@ const envSchema = z
       isDev ?
         z.string({ error: 'REDIS_PASSWORD is required' })
       : z.string({ error: 'REDIS_PASSWORD is required' }),
+    REDIS_TLS_ENABLED: booleanFromString('REDIS_TLS_ENABLED').optional().default(true),
 
     /* ---------------- SMTP ---------------- */
     SMTP_HOST: isDev ? z.string().optional() : z.string(),
