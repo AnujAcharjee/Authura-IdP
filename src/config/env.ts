@@ -26,14 +26,14 @@ const seconds = (name: string) =>
       message: `${name} must be greater than 0`,
     });
 
-const booleanFromString = (name: string) =>
-  z
-    .string({ error: `${name} is required` })
-    .transform((v) => v.trim().toLowerCase())
-    .refine((v) => v === 'true' || v === 'false', {
-      message: `${name} must be true or false`,
-    })
-    .transform((v) => v === 'true');
+// const booleanFromString = (name: string) =>
+//   z
+//     .string({ error: `${name} is required` })
+//     .transform((v) => v.trim().toLowerCase())
+//     .refine((v) => v === 'true' || v === 'false', {
+//       message: `${name} must be true or false`,
+//     })
+//     .transform((v) => v === 'true');
 
 const url = (name: string) =>
   z.url({
@@ -61,14 +61,16 @@ const envSchema = z
     }),
 
     /* ---------------- Redis ---------------- */
-    REDIS_HOST: isDev ? z.string({ error: 'REDIS_HOST is required' }) : z.string().optional(),
-    REDIS_USERNAME: isDev ? z.string({ error: 'REDIS_USERNAME is required' }) : z.string().optional(),
-    REDIS_PORT: isDev ? port('REDIS_PORT') : port('REDIS_PORT').optional(),
-    REDIS_PASSWORD:
-      isDev ?
-        z.string({ error: 'REDIS_PASSWORD is required' })
-      : z.string({ error: 'REDIS_PASSWORD is required' }),
-    REDIS_TLS_ENABLED: booleanFromString('REDIS_TLS_ENABLED').optional().default(true),
+    // REDIS_HOST: isDev ? z.string({ error: 'REDIS_HOST is required' }) : z.string().optional(),
+    // REDIS_USERNAME: isDev ? z.string({ error: 'REDIS_USERNAME is required' }) : z.string().optional(),
+    // REDIS_PORT: isDev ? port('REDIS_PORT') : port('REDIS_PORT').optional(),
+    // REDIS_PASSWORD:
+    //   isDev ?
+    //     z.string({ error: 'REDIS_PASSWORD is required' })
+    //   : z.string({ error: 'REDIS_PASSWORD is required' }),
+    // REDIS_TLS_ENABLED: booleanFromString('REDIS_TLS_ENABLED').optional().default(true),
+
+    REDIS_URL: isDev ? z.string({ error: 'REDIS_URL is required' }) : z.string().optional(),
 
     /* ---------------- SMTP ---------------- */
     SMTP_HOST: isDev ? z.string().optional() : z.string(),

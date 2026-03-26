@@ -1,27 +1,30 @@
-import { Redis, type RedisOptions } from 'ioredis';
+import {
+  Redis,
+  //  type RedisOptions
+} from 'ioredis';
 import { ENV } from './env.js';
 import { logger } from './logger.js';
 
-const options: RedisOptions = {
-  host: ENV.REDIS_HOST,
-  username: ENV.REDIS_USERNAME,
-  port: ENV.REDIS_PORT,
-  password: ENV.REDIS_PASSWORD,
-  db: 0,
-  ...(ENV.REDIS_TLS_ENABLED ?
-    {
-      tls: { rejectUnauthorized: false },
-    }
-  : {}),
-  maxRetriesPerRequest: 3,
-  enableReadyCheck: true,
-  enableOfflineQueue: true,
-  connectTimeout: 10_000,
+// const options: RedisOptions = {
+//   host: ENV.REDIS_HOST,
+//   username: ENV.REDIS_USERNAME,
+//   port: ENV.REDIS_PORT,
+//   password: ENV.REDIS_PASSWORD,
+//   db: 0,
+//   ...(ENV.REDIS_TLS_ENABLED ?
+//     {
+//       tls: { rejectUnauthorized: false },
+//     }
+//   : {}),
+//   maxRetriesPerRequest: 3,
+//   enableReadyCheck: true,
+//   enableOfflineQueue: true,
+//   connectTimeout: 10_000,
 
-  retryStrategy: (times) => Math.min(times * 100, 3000),
-};
+//   retryStrategy: (times) => Math.min(times * 100, 3000),
+// };
 
-const redis = new Redis(options);
+const redis = new Redis(ENV.REDIS_URL!);
 
 redis.on('connect', () => {
   logger.info('Redis socket connected');
