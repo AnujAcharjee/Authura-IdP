@@ -54,8 +54,6 @@ jobs:
 
             ACTIVE_SESSION_EX=${{ secrets.ACTIVE_SESSION_EX }}
             IDENTITY_SESSION_EX=${{ secrets.IDENTITY_SESSION_EX }}
-            CLIENT_CACHE_EX=${{ secrets.CLIENT_CACHE_EX }}
-            PROFILE_CACHE_EX=${{ secrets.PROFILE_CACHE_EX }}
 
             EMAIL_VERIFICATION_TOKEN_EX=${{ secrets.EMAIL_VERIFICATION_TOKEN_EX }}
             SIGN_VERIFICATION_TOKEN_EX=${{ secrets.SIGN_VERIFICATION_TOKEN_EX }}
@@ -64,6 +62,10 @@ jobs:
             MAX_SIGNIN_FAILURES=${{ secrets.MAX_SIGNIN_FAILURES }}
             SIGNIN_LOCK_UNTIL=${{ secrets.SIGNIN_LOCK_UNTIL }}
             SIGN_IN_FAIL_COUNT_EX=${{ secrets.SIGN_IN_FAIL_COUNT_EX }}
+
+            CLIENT_CACHE_EX=${{ secrets.CLIENT_CACHE_EX }}
+            CLIENT_SECRET_KEY=${{ secrets.CLIENT_SECRET_KEY }}
+            PROFILE_CACHE_EX=${{ secrets.PROFILE_CACHE_EX }}
 
             KEY_ENC_SECRET=${{ secrets.KEY_ENC_SECRET }}
             INIT_ADMIN_EMAIL=${{ secrets.INIT_ADMIN_EMAIL }}
