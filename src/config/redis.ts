@@ -8,11 +8,17 @@ const options: RedisOptions = {
   port: ENV.REDIS_PORT,
   password: ENV.REDIS_PASSWORD,
   db: 0,
-  ...(ENV.REDIS_TLS_ENABLED ? { tls: {} } : {}),
+  ...(ENV.REDIS_TLS_ENABLED ?
+    {
+      tls: { rejectUnauthorized: false },
+    }
+  : {}),
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
-  enableOfflineQueue: false,
+  enableOfflineQueue: true,
   connectTimeout: 10_000,
+
+  retryStrategy: (times) => Math.min(times * 100, 3000),
 };
 
 const redis = new Redis(options);
