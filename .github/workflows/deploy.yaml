@@ -23,6 +23,52 @@ jobs:
             set -e
             cd /srv/pramaan
 
+            cat <<EOF > .env
+            NODE_ENV=${{ secrets.NODE_ENV }}
+            PORT=${{ secrets.PORT }}
+            RUN_SEEDS=${{ secrets.RUN_SEEDS }}
+
+            APP_NAME=${{ secrets.APP_NAME }}
+            APP_DOMAIN=${{ secrets.APP_DOMAIN }}
+            APP_DOC_URL=${{ secrets.APP_DOC_URL }}
+
+            NEON_PG_DATABASE_URL=${{ secrets.NEON_PG_DATABASE_URL }}
+            COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}
+
+            REDIS_HOST=${{ secrets.REDIS_HOST }}
+            REDIS_PORT=${{ secrets.REDIS_PORT }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
+            REDIS_TLS_ENABLED=${{ secrets.REDIS_TLS_ENABLED }}
+
+            SMTP_HOST=${{ secrets.SMTP_HOST }}
+            SMTP_PORT=${{ secrets.SMTP_PORT }}
+            SMTP_USER=${{ secrets.SMTP_USER }}
+            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+            SMTP_FROM=${{ secrets.SMTP_FROM }}
+
+            AUTH_ISSUER=${{ secrets.AUTH_ISSUER }}
+            AUTH_CODE_EX=${{ secrets.AUTH_CODE_EX }}
+            AUTH_REQUEST_EX=${{ secrets.AUTH_REQUEST_EX }}
+            AUTH_TOKENS_EX=${{ secrets.AUTH_TOKENS_EX }}
+
+            ACTIVE_SESSION_EX=${{ secrets.ACTIVE_SESSION_EX }}
+            IDENTITY_SESSION_EX=${{ secrets.IDENTITY_SESSION_EX }}
+            CLIENT_CACHE_EX=${{ secrets.CLIENT_CACHE_EX }}
+            PROFILE_CACHE_EX=${{ secrets.PROFILE_CACHE_EX }}
+
+            EMAIL_VERIFICATION_TOKEN_EX=${{ secrets.EMAIL_VERIFICATION_TOKEN_EX }}
+            SIGN_VERIFICATION_TOKEN_EX=${{ secrets.SIGN_VERIFICATION_TOKEN_EX }}
+            RESET_PASSWORD_EX=${{ secrets.RESET_PASSWORD_EX }}
+
+            MAX_SIGNIN_FAILURES=${{ secrets.MAX_SIGNIN_FAILURES }}
+            SIGNIN_LOCK_UNTIL=${{ secrets.SIGNIN_LOCK_UNTIL }}
+            SIGN_IN_FAIL_COUNT_EX=${{ secrets.SIGN_IN_FAIL_COUNT_EX }}
+
+            KEY_ENC_SECRET=${{ secrets.KEY_ENC_SECRET }}
+            INIT_ADMIN_EMAIL=${{ secrets.INIT_ADMIN_EMAIL }}
+            EOF
+
             git fetch --all
             git reset --hard origin/main
 
