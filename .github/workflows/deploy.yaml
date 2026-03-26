@@ -35,11 +35,13 @@ jobs:
             NEON_PG_DATABASE_URL=${{ secrets.NEON_PG_DATABASE_URL }}
             COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}
 
-            REDIS_HOST=${{ secrets.REDIS_HOST }}
-            REDIS_PORT=${{ secrets.REDIS_PORT }}
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
-            REDIS_TLS_ENABLED=${{ secrets.REDIS_TLS_ENABLED }}
+            # REDIS_HOST=${{ secrets.REDIS_HOST }}
+            # REDIS_PORT=${{ secrets.REDIS_PORT }}
+            # REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            # REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
+            # REDIS_TLS_ENABLED=${{ secrets.REDIS_TLS_ENABLED }}
+
+            REDIS_URL=${{ secrets.REDIS_URL }}
 
             SMTP_HOST=${{ secrets.SMTP_HOST }}
             SMTP_PORT=${{ secrets.SMTP_PORT }}
