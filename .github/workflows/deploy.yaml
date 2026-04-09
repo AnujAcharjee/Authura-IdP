@@ -45,7 +45,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            mkdir -p /srv/pramaan
+            sudo mkdir -p /srv/pramaan
+            sudo chown -R ubuntu:ubuntu /srv/pramaan
             cd /srv/pramaan
 
             cat <<EOF > .env
