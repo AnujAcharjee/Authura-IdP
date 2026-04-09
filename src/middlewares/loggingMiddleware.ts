@@ -4,6 +4,7 @@ import { logger } from '../config/logger.js';
 
 export const loggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // if (ENV.NODE_ENV === 'production') return next();
+  if (req.path === '/health') return next(); // skip health check logs
 
   const startTime = Date.now();
 
