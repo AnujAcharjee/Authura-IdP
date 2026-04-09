@@ -44,7 +44,22 @@ eslint.config.*
 README.md
 doc
 
-# !! Dev-only Docker files (comment out in dev)
-Dockerfile.*
+# Docker
+Dockerfile
+docker-compose.yml
 docker-compose.*.yml
+.dockerignore
+
+# Secrets (IMPORTANT)
+*.pem
+*.key
+
+# Temp / cache
+tmp
+temp
+.cache
+npm-cache
+.pnpm-store
+
+# Dev-only
 nodemon.json

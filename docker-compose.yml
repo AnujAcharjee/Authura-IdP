@@ -1,6 +1,6 @@
 services:
   caddy:
-    image: caddy:latest
+    image: caddy:2-alpine
     restart: unless-stopped
     ports:
       - "80:80"
@@ -13,27 +13,47 @@ services:
       - pramaan
     networks:
       - pramaan-network
-    init:
-      true
+    init: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
 
   pramaan:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: anuj304/pramaan:latest
     restart: unless-stopped
     env_file:
       - .env
     expose:
-      - "${PORT}"
+      - "8080"
     command: ["node", "dist/index.js"]
     networks:
       - pramaan-network
-    mem_limit: 512m
+
+    mem_limit: 400m
     cpus: 0.5
-    init: true
+
     security_opt:
       - no-new-privileges:true
     
+    read_only: true
+    tmpfs:
+      - /tmp
+
+    init: true
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', r => { if(r.statusCode !== 200) process.exit(1); })"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
 
 volumes:
   caddy_data:

@@ -1,3 +1,8 @@
+# STRATEGY:
+# build docker image each time in Git Actions and push image in Docker Hub
+# then pull image in EC2, then run
+# so we don't need git in EC2 and no docker build... reduces instance load
+
 name: Deploy App to EC2
 
 on:
@@ -13,7 +18,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy Via SSH
+      # Login Docker Hub
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Build Image + tag
+      - name: Build Docker Image
+        run: docker build \
+          -t ${{ secrets.DOCKER_USERNAME }}/pramaan:latest \
+          -t ${{ secrets.DOCKER_USERNAME }}/pramaan:${{ github.sha }} .
+
+      # Push Image
+      - name: Push Image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/pramaan:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/pramaan:${{ github.sha }}
+
+      # Deploy in EC2
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
@@ -34,12 +56,6 @@ jobs:
 
             NEON_PG_DATABASE_URL=${{ secrets.NEON_PG_DATABASE_URL }}
             COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}
-
-            # REDIS_HOST=${{ secrets.REDIS_HOST }}
-            # REDIS_PORT=${{ secrets.REDIS_PORT }}
-            # REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            # REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
-            # REDIS_TLS_ENABLED=${{ secrets.REDIS_TLS_ENABLED }}
 
             REDIS_URL=${{ secrets.REDIS_URL }}
 
@@ -73,12 +89,7 @@ jobs:
             INIT_ADMIN_EMAIL=${{ secrets.INIT_ADMIN_EMAIL }}
             EOF
 
-            git fetch --all
-            git reset --hard origin/main
+            docker compose --project-name pramaan pull
+            docker compose --project-name pramaan up -d --remove-orphans
 
-            docker compose --project-name pramaan -f docker-compose.yml down
-
-            docker system prune -af
-            docker builder prune -af
-
-            docker compose --project-name pramaan -f docker-compose.yml up -d --build
+            docker image prune -f

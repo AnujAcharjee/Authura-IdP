@@ -2,7 +2,7 @@ services:
   pramaan-dev:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     volumes:
       - ./src:/app/src:delegated
       - ./prisma:/app/prisma:delegated
