@@ -111,6 +111,7 @@ jobs:
 
             KEY_ENC_SECRET=${{ secrets.KEY_ENC_SECRET }}
             INIT_ADMIN_EMAIL=${{ secrets.INIT_ADMIN_EMAIL }}
+            LOGTAIL_SOURCE_TOKEN=${{ secrets.LOGTAIL_SOURCE_TOKEN }}
             EOF
 
             docker compose --project-name pramaan pull

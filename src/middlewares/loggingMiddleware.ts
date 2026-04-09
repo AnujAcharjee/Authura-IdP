@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import { logger } from '../config/logger.js';
-import { ENV } from '../config/env.js';
+// import { ENV } from '../config/env.js';
 
 export const loggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  if (ENV.NODE_ENV === 'production') return next();
+  // if (ENV.NODE_ENV === 'production') return next();
 
   const startTime = Date.now();
 
