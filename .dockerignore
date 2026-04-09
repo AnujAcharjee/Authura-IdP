@@ -63,3 +63,5 @@ npm-cache
 
 # Dev-only
 nodemon.json
+
+Caddyfile

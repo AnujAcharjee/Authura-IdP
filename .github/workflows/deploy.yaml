@@ -1,5 +1,6 @@
 # STRATEGY:
 # build docker image each time in Git Actions and push image in Docker Hub
+# copy the docker-compose and Caddyfile in EC2 as we need them to run Image (they are not in Image)
 # then pull image in EC2, then run
 # so we don't need git in EC2 and no docker build... reduces instance load
 
@@ -36,6 +37,27 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/pramaan:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/pramaan:${{ github.sha }}
 
+      # Setup EC2 directory
+      - name: Setup EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_SSH_HOST }}
+          username: ${{ secrets.EC2_SSH_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo mkdir -p /srv/pramaan
+            sudo chown -R ubuntu:ubuntu /srv/pramaan
+
+      # Copy files to EC2
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_SSH_HOST }}
+          username: ${{ secrets.EC2_SSH_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml,Caddyfile"
+          target: "/srv/pramaan"
+
       # Deploy in EC2
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -45,8 +67,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            sudo mkdir -p /srv/pramaan
-            sudo chown -R ubuntu:ubuntu /srv/pramaan
             cd /srv/pramaan
 
             cat <<EOF > .env
