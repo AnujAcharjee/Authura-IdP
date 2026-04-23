@@ -75,14 +75,18 @@ const envSchema = z
     REDIS_URL: isDev ? z.string({ error: 'REDIS_URL is required' }) : z.string().optional(),
 
     /* ---------------- SMTP ---------------- */
-    SMTP_HOST: isDev ? z.string().optional() : z.string(),
-    SMTP_PORT: isDev ? numberFromString('SMTP_PORT').optional() : numberFromString('SMTP_PORT'),
-    SMTP_USER: isDev ? z.string().optional() : z.string(),
-    SMTP_PASSWORD: isDev ? z.string().optional() : z.string(),
-    SMTP_FROM:
-      isDev ?
-        z.string().min(1, 'SMTP_FROM cannot be empty').optional()
-      : z.string().min(1, 'SMTP_FROM cannot be empty'),
+    // SMTP_HOST: isDev ? z.string().optional() : z.string(),
+    // SMTP_PORT: isDev ? numberFromString('SMTP_PORT').optional() : numberFromString('SMTP_PORT'),
+    // SMTP_USER: isDev ? z.string().optional() : z.string(),
+    // SMTP_PASSWORD: isDev ? z.string().optional() : z.string(),
+    // SMTP_FROM:
+    //   isDev ?
+    //     z.string().min(1, 'SMTP_FROM cannot be empty').optional()
+    //   : z.string().min(1, 'SMTP_FROM cannot be empty'),
+
+    /* ---------------- MailSender API ---------------- */
+    MAILERSEND_API_KEY: z.string({ error: 'MAILSENDER_API_KEY is required' }).min(1, 'MAILSENDER_API_KEY cannot be empty'),
+    EMAIL_FROM: z.string({ error: 'EMAIL_FROM is required' }).email('EMAIL_FROM must be a valid email address'),
 
     /* ---------------- Auth Expiries (seconds) ---------------- */
     ACTIVE_SESSION_EX: seconds('ACTIVE_SESSION_EX').refine((n) => n >= 10 * 60 && n <= 30 * 60, {
@@ -133,21 +137,21 @@ const envSchema = z
           })
           .min(32, 'CLIENT_SECRET_KEY must be at least 32 characters'),
   })
-  .superRefine((env, ctx) => {
-    if (env.NODE_ENV === 'production') {
-      const requiredSMTP: (keyof typeof env)[] = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD'];
+  // .superRefine((env, ctx) => {
+  //   if (env.NODE_ENV === 'production') {
+  //     const requiredSMTP: (keyof typeof env)[] = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD'];
 
-      for (const key of requiredSMTP) {
-        if (!env[key]) {
-          ctx.addIssue({
-            code: 'custom',
-            path: [key],
-            message: `${key} is required in production`,
-          });
-        }
-      }
-    }
-  });
+  //     for (const key of requiredSMTP) {
+  //       if (!env[key]) {
+  //         ctx.addIssue({
+  //           code: 'custom',
+  //           path: [key],
+  //           message: `${key} is required in production`,
+  //         });
+  //       }
+  //     }
+  //   }
+  // });
 
 const parsed = envSchema.safeParse(process.env);
 
