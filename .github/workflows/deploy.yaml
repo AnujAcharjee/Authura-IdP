@@ -69,7 +69,7 @@ jobs:
             set -e
             cd /srv/pramaan
 
-            cat <<EOF > .env
+            cat <<'EOF' > .env
             NODE_ENV=${{ secrets.NODE_ENV }}
             PORT=${{ secrets.PORT }}
             RUN_SEEDS=${{ secrets.RUN_SEEDS }}
@@ -83,11 +83,8 @@ jobs:
 
             REDIS_URL=${{ secrets.REDIS_URL }}
 
-            SMTP_HOST=${{ secrets.SMTP_HOST }}
-            SMTP_PORT=${{ secrets.SMTP_PORT }}
-            SMTP_USER=${{ secrets.SMTP_USER }}
-            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
-            SMTP_FROM=${{ secrets.SMTP_FROM }}
+            MAILERSEND_API_KEY=${{ secrets.MAILERSEND_API_KEY }}
+            EMAIL_FROM=${{ secrets.EMAIL_FROM }}
 
             AUTH_ISSUER=${{ secrets.AUTH_ISSUER }}
             AUTH_CODE_EX=${{ secrets.AUTH_CODE_EX }}
