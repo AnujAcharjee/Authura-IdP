@@ -17,7 +17,7 @@ export class AuthZSchema {
       }),
     })
     .refine((data) => data.body.password === data.body.confirmPassword, {
-      message: 'Passwords do not match',
+      message: 'Both password fields must match',
       path: ['body', 'confirmPassword'],
     })
     .refine((data) => requireRequestIdForOauth(data.body.flow, data.body.request_id), {

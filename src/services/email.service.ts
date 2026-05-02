@@ -3,6 +3,8 @@ import { SERVER_URL } from '../utils/constant.js';
 import { ENV } from '../config/env.js';
 import { logger } from '../config/logger.js';
 import redis from '../config/redis.js';
+import { AppError } from '../utils/appError.js';
+import { ErrorCode } from '../utils/errorCodes.js';
 import {
   getEmailVerificationTemplate,
   getPasswordResetEmailTemplate,
@@ -16,6 +18,14 @@ interface SendEmailOptions {
   html: string;
   text: string;
 }
+
+type MailerSendError = {
+  statusCode?: number;
+  body?: {
+    message?: string;
+    errors?: Record<string, unknown>;
+  };
+};
 
 class EmailService {
   private mailer!: MailerSend;
@@ -63,10 +73,39 @@ class EmailService {
     const exists = await redis.get(redisKey);
 
     if (exists) {
-      throw new Error('Too many requests');
+      throw new AppError(
+        'Please wait before requesting another email.',
+        429,
+        ErrorCode.RATE_LIMITED,
+      );
     }
 
     await redis.set(redisKey, '1', 'EX', limitSeconds);
+  }
+
+  private normalizeMailerSendError(error: unknown): AppError {
+    const mailerError = error as MailerSendError;
+    const statusCode = mailerError?.statusCode;
+
+    logger.error('MailerSend email delivery failed', {
+      statusCode,
+      body: mailerError?.body,
+      error,
+    });
+
+    if (statusCode && statusCode >= 400 && statusCode < 500) {
+      return new AppError(
+        'We could not send an email to that address. Please check the email and try again.',
+        400,
+        ErrorCode.INVALID_EMAIL,
+      );
+    }
+
+    return new AppError(
+      'We could not send the email right now. Please try again later.',
+      503,
+      ErrorCode.EXTERNAL_SERVICE_ERROR,
+    );
   }
 
   private async sendWithRetry(options: SendEmailOptions, retries = 3) {
@@ -91,7 +130,7 @@ class EmailService {
       }
     }
 
-    throw lastError;
+    throw this.normalizeMailerSendError(lastError);
   }
 
   private buildUrl(path: string, token: string, flow: AuthenticationFlow, requestId?: string) {
