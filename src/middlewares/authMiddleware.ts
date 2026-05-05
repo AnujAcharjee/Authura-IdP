@@ -25,6 +25,12 @@ import type { AuthenticationFlow } from '../services/auth.service.js';
 
 export class Authentication {
   private static activeSession_RK = (sid: string) => `session:active:${sid}`;
+  private static resolveOAuthRequestId(req: Request): string | undefined {
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    const query = (req.query ?? {}) as Record<string, unknown>;
+
+    return (body.request_id as string) ?? (query.request_id as string) ?? req.requestId;
+  }
 
   private constructor() {}
 
@@ -66,7 +72,7 @@ export class Authentication {
 
         // No valid session
         if (flow === 'oauth') {
-          const requestId = req.requestId;
+          const requestId = Authentication.resolveOAuthRequestId(req);
 
           const params = new URLSearchParams({
             flow: 'oauth',

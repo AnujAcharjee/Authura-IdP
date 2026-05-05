@@ -1,6 +1,7 @@
 import { ENV } from '../config/env.js';
 
-export const SERVER_URL = `${ENV.NODE_ENV === 'production' ? 'https' : 'http'}://${ENV.APP_DOMAIN}`;
+export const SERVER_URL =
+  ENV.NODE_ENV === 'production' ? new URL(ENV.AUTH_ISSUER).origin : `http://${ENV.APP_DOMAIN}`;
 
 /** User & Auth */
 
