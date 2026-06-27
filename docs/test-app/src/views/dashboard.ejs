@@ -1,119 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login Success</title>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, sans-serif;
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
     }
-
-    body {
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: white;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 2.5rem;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 450px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    }
-
-    .avatar {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 1rem;
-      border: 3px solid #3b82f6;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .email {
-      color: #94a3b8;
-      margin-bottom: 1.5rem;
-      font-size: 0.9rem;
-    }
-
-    .info-box {
-      background: #0f172a;
-      padding: 1rem;
-      border-radius: 10px;
-      text-align: left;
-      font-size: 0.85rem;
-      margin-bottom: 1.5rem;
-      overflow-x: auto;
-    }
-
-    button {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 0.7rem 1.2rem;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-
-    button:hover {
-      background: #dc2626;
-      transform: translateY(-2px);
-    }
-
-    .badge {
-      display: inline-block;
-      background: #3b82f6;
-      padding: 0.3rem 0.7rem;
-      border-radius: 999px;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-    }
-  </style>
+  </script>
 </head>
 
-<body>
-  <div class="card">
+<body class="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+  
+  <!-- Decorative background elements -->
+  <div class="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="badge">Authenticated via Pramaan</div>
+  <!-- Main Card -->
+  <div class="w-full max-w-lg bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl text-center relative z-10 transition-all duration-300 hover:border-slate-700/80">
+    
+    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      Authenticated via Pramaan
+    </div>
 
-    <% if (user.avatar) { %>
-    <img src="<%= user.avatar %>" alt="User Avatar" class="avatar" />
-    <% } %>
+    <div class="flex flex-col items-center mb-6">
+      <% if (user.avatar) { %>
+      <img src="<%= user.avatar %>" alt="User Avatar" class="w-20 h-20 rounded-2xl object-cover border-2 border-sky-500/30 ring-4 ring-sky-500/10 mb-4 shadow-lg hover-scale" />
+      <% } else { %>
+      <div class="w-20 h-20 rounded-2xl bg-sky-550/10 border border-sky-500/20 text-sky-400 flex items-center justify-center mb-4 shadow-lg">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </div>
+      <% } %>
 
-    <h1>Welcome, <%= user.name || 'User' %></h1>
-    <div class="email"><%= user.email %></div>
+      <h1 class="text-xl sm:text-2xl font-extrabold text-slate-100 tracking-tight">Welcome, <%= user.name || 'User' %></h1>
+      <div class="text-sm font-semibold text-slate-400 mt-1 select-all"><%= user.email %></div>
+    </div>
 
-    <div class="info-box">
-      <strong>User ID:</strong> <%= user.id %><br />
-      <strong>Provider:</strong> <%= user.provider %><br />
-      <strong>Provider User ID:</strong> <%= user.providerUserId %><br />
-      <strong>Created:</strong> <%= user.createdAt %>
+    <!-- Metadata Details Table -->
+    <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 text-left text-xs space-y-3 mb-8 shadow-inner">
+      <div class="flex justify-between items-center py-1.5 border-b border-slate-900 gap-4">
+        <span class="font-bold text-slate-500 uppercase tracking-wide">User ID</span>
+        <span class="font-mono text-slate-300 truncate select-all" title="<%= user.id %>"><%= user.id %></span>
+      </div>
+      <div class="flex justify-between items-center py-1.5 border-b border-slate-900 gap-4">
+        <span class="font-bold text-slate-500 uppercase tracking-wide">Provider</span>
+        <span class="font-semibold text-sky-400"><%= user.provider %></span>
+      </div>
+      <div class="flex justify-between items-center py-1.5 border-b border-slate-900 gap-4">
+        <span class="font-bold text-slate-500 uppercase tracking-wide">Provider User ID</span>
+        <span class="font-mono text-slate-300 truncate select-all" title="<%= user.providerUserId %>"><%= user.providerUserId %></span>
+      </div>
+      <div class="flex justify-between items-center py-1.5 gap-4">
+        <span class="font-bold text-slate-500 uppercase tracking-wide">Created</span>
+        <span class="font-semibold text-slate-305"><%= user.createdAt %></span>
+      </div>
     </div>
 
     <form method="POST" action="/logout">
-      <button type="submit">Logout</button>
+      <button type="submit" class="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-linear-to-r from-red-500 to-red-650 text-white font-bold text-sm shadow-lg shadow-red-500/10 hover:shadow-xl hover:shadow-red-500/20 active:scale-[0.98] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer">
+        Logout
+      </button>
     </form>
 
   </div>
 </body>
-
 </html>

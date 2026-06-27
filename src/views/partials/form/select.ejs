@@ -8,12 +8,12 @@
   const _value = typeof value !== 'undefined' ? value : null;
 %>
 
-<div class="space-y-1.5">
+<div class="space-y-2">
   <% if (_label && _id) { %>
-    <label for="<%= _id %>" class="block text-sm font-medium text-slate-700">
+    <label for="<%= _id %>" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-0.5">
       <%= _label %>
       <% if (_required) { %>
-        <span class="text-red-500">*</span>
+        <span class="text-brand-orangeDark">*</span>
       <% } %>
     </label>
   <% } %>
@@ -22,16 +22,16 @@
     <% if (_id) { %>id="<%= _id %>"<% } %>
     <% if (_name) { %>name="<%= _name %>"<% } %>
     <% if (_required) { %>required<% } %>
-    class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all duration-200 focus:border-brand-orange focus:outline-none focus:ring-4 focus:ring-brand-orange/30"
+    class="input-field cursor-pointer"
   >
     <% _options.forEach(function(option) { %>
-      <option value="<%= option.value %>" <%= _value === option.value ? 'selected' : '' %>>
+      <option value="<%= option.value %>" <%= _value === option.value ? 'selected' : '' %> class="dark:bg-slate-900 dark:text-slate-100">
         <%= option.label %>
       </option>
     <% }); %>
   </select>
 
   <% if (_helperText) { %>
-    <p class="text-xs text-slate-500 mt-1"><%= _helperText %></p>
+    <p class="text-xs text-slate-405 dark:text-slate-500 ml-0.5"><%= _helperText %></p>
   <% } %>
 </div>

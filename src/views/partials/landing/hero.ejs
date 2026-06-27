@@ -1,52 +1,51 @@
-<section>
-  <div class="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 py-15 sm:py-20">
-    <div class="max-w-3xl mx-auto flex flex-col items-center text-center">
+<section class="relative overflow-hidden">
+  <div class="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 py-20 sm:py-28 relative z-10">
+    <div class="max-w-4xl mx-auto flex flex-col items-center text-center">
 
       <!-- Badge -->
-      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-brand-orange/70 text-sm font-mono font-semibold text-brand-orangeDark mb-8">
-        <span class="relative flex h-2 w-2">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50/70 dark:bg-orange-950/20 backdrop-blur-xs border border-brand-orange/40 dark:border-brand-orange/30 text-sm font-semibold text-brand-orangeDark dark:text-brand-orange mb-8 hover-scale shadow-xs">
+        <span class="relative flex h-2.5 w-2.5">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-orangeDark"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-orangeDark dark:bg-brand-orange"></span>
         </span>
-        OAuth 2.0 & OpenID Connect
+        <span class="tracking-wide">OAuth 2.0 & OpenID Connect</span>
       </div>
 
       <!-- Heading -->
-      <div class="relative inline-block">
-        <div class="absolute inset-0 blur-3xl bg-orange-400 opacity-40"></div>
-
-        <h1 class="relative font-brand-hero text-4xl sm:text-6xl font-semibold tracking-tight text-slate-900">
+      <div class="relative inline-block mb-6">
+        <div class="absolute inset-0 blur-3xl bg-orange-400/20 rounded-full"></div>
+        <h1 class="relative font-brand-hero text-5xl sm:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 leading-[1.1]">
           Modern Identity Infrastructure
         </h1>
       </div>
 
       <!-- Subheading -->
-      <p class="mt-6 text-md sm:text-lg text-slate-600 leading-relaxed max-w-xl lg:max-w-3xl text-center">
+      <p class="text-base sm:text-xl text-slate-600 dark:text-slate-350 leading-relaxed max-w-2xl text-center font-medium">
         Secure authentication, token lifecycle management, and standards-compliant
         OAuth 2.0 + OpenID Connect flows for web, mobile, and backend systems.
       </p>
 
       <!-- CTA -->
-      <div class="mt-10 flex flex-col sm:flex-row gap-4">
-        <a href="/account" class="btn-orange">
+      <div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/account" class="btn-orange text-lg shadow-xl shadow-brand-orange/15 hover:-translate-y-0.5 active:translate-y-0">
           Get Started
         </a>
       </div>
 
       <!-- Feature Row -->
-      <div class="mt-14 flex flex-col items-start gap-4 font-sans font-semibold
-            lg:flex-row lg:items-center lg:flex-wrap lg:justify-center lg:gap-x-8 lg:gap-y-4 
-            text-sm text-slate-500">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 border-green-400"></span>
+      <div class="mt-16 flex flex-col items-center gap-4 font-semibold
+            sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-10 sm:gap-y-4 
+            text-sm text-slate-500 dark:text-slate-400">
+        <div class="flex items-center gap-2.5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xs border border-slate-200/50 dark:border-slate-800/80 px-4 py-2 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all duration-300">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
           PKCE & Refresh Token Rotation
         </div>
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 border-green-400"></span>
+        <div class="flex items-center gap-2.5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xs border border-slate-200/50 dark:border-slate-800/80 px-4 py-2 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all duration-300">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
           OIDC Discovery & JWKS
         </div>
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 border-green-400"></span>
+        <div class="flex items-center gap-2.5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xs border border-slate-200/50 dark:border-slate-800/80 px-4 py-2 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all duration-300">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
           Client & Scope Management
         </div>
       </div>

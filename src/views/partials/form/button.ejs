@@ -10,20 +10,20 @@
   const _disabled = typeof disabled !== 'undefined' ? disabled : false;
   const _icon = typeof icon !== 'undefined' ? icon : null;
 
-  const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-300 active:scale-[0.98] focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-xs rounded-md',
-    md: 'px-4 py-2.5 text-sm rounded-lg',
-    lg: 'px-6 py-3 text-base rounded-lg'
+    sm: 'px-4 py-2 text-xs rounded-xl',
+    md: 'px-5 py-3 text-sm rounded-xl',
+    lg: 'px-7 py-3.5 text-base rounded-xl'
   };
 
   const variantClasses = {
-    primary: 'bg-linear-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 focus:ring-sky-500/30 shadow-sm hover:shadow-md',
-    secondary: 'bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 focus:ring-orange-500/30',
-    danger: 'bg-linear-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-red-500/30 shadow-sm hover:shadow-md',
-    ghost: 'text-slate-600 hover:bg-slate-100 focus:ring-slate-300/30',
-    outline: 'border-2 border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus:ring-slate-300/30'
+    primary: 'bg-linear-to-r from-sky-500 via-sky-500/90 to-sky-600 text-white hover:shadow-lg hover:shadow-sky-500/15 focus:ring-sky-500/20',
+    secondary: 'border-2 border-brand-orange text-brand-orange bg-white/40 backdrop-blur-xs hover:bg-brand-orange hover:text-white focus:ring-brand-orange/20',
+    danger: 'bg-linear-to-r from-red-500 via-red-500/90 to-red-600 text-white hover:shadow-lg hover:shadow-red-500/15 focus:ring-red-500/20',
+    ghost: 'text-slate-600 hover:bg-slate-50 focus:ring-slate-100/30',
+    outline: 'border-2 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 focus:ring-slate-200/30'
   };
 
   const widthClass = _fullWidth ? 'w-full' : '';

@@ -8,371 +8,366 @@
       : '/images/avatar-f-placeholder.png';
 %>
 
-<div class="max-w-7xl mx-auto py-6 sm:py-8 space-y-6 sm:space-y-8">
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 animate-slideIn relative z-10">
 
   <!-- Page Header -->
-  <div class="gap-2 hidden sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/40 dark:border-slate-800/40 pb-6">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Dashboard</h1>
-      <p class="text-slate-600 mt-1">Manage your account and clients</p>
+      <h1 class="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Dashboard</h1>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your account credentials, security settings, and client applications.</p>
     </div>
+
+    <!-- Theme Switch Button -->
+    <button id="themeToggle" class="btn-outline-gray !py-2 !px-4 !text-xs shrink-0 flex items-center justify-center gap-2">
+      <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+      </svg>
+      <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+      </svg>
+      <span class="hidden dark:block">Light Mode</span>
+      <span class="block dark:hidden">Dark Mode</span>
+    </button>
   </div>
 
   <%- include("../../../partials/alert", { success, error }) %>
 
-  <!-- Profile Section -->
-  <section class="dashboard-section">
-    <div class="flex flex-col sm:flex-row items-start gap-6">
-      <!-- Avatar -->
-      <div class="relative">
-        <img src="<%= _avatar %>" alt="<%= user.name %>" class="h-20 w-20 rounded-2xl object-cover ring-4 ring-orange-500/20" />
-        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
-      </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Profile & Security Column (Left) -->
+    <div class="lg:col-span-1 space-y-8">
+      
+      <!-- Profile Section -->
+      <section class="dashboard-section !p-6">
+        <div class="flex flex-col items-center text-center">
+          <!-- Avatar -->
+          <div class="relative mb-4 hover-scale">
+            <img src="<%= _avatar %>" alt="<%= user.name %>" class="h-24 w-24 rounded-3xl object-cover ring-4 ring-brand-orange/20 dark:ring-brand-orange/15 shadow-md" />
+            <% if(user.isEmailVerified) { %>
+            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-white dark:border-[#151820] flex items-center justify-center shadow-sm" title="Email Verified">
+              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <% } %>
+          </div>
 
-      <!-- User Info -->
-      <div class="flex-1 min-w-0">
-
-        <!-- Name -->
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 wrap-break-words">
-          <%= user.name %>
-        </h2>
-
-        <!-- Email + Verified -->
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-slate-600 break-all">
-            <%= user.email %>
-          </span>
-
-          <% if(user.isEmailVerified) { %>
-          <span class="px-1 py-0.5 rounded-2xl bg-green-200/70">
-            <svg class="w-4 h-4 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-            </svg>
-          </span>
-          <% } %>
+          <!-- User Info -->
+          <div class="space-y-1.5 w-full min-w-0">
+            <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 truncate">
+              <%= user.name %>
+            </h2>
+            <p class="text-sm font-semibold text-slate-500 dark:text-slate-500 truncate select-all">
+              <%= user.email %>
+            </p>
+            
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700/25 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-600">
+              <svg class="w-4 h-4 text-slate-400 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Joined <%= createdAtFormatted %></span>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <!-- Joined Date -->
-        <div class="flex items-center gap-2 text-sm text-slate-500 mt-3">
-          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span>Joined <%= createdAtFormatted %></span>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- Security Section -->
-  <section class="dashboard-section">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="dashboard-icon">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      </div>
-      <h2 class="text-xl font-bold text-slate-900">Security Settings</h2>
-    </div>
-
-    <div class="space-y-4">
-
-      <!-- Password -->
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200 hover:border-orange-300 transition-colors">
-        <div class="flex items-start sm:items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-linear-to-br from-sky-100 to-sky-200 flex items-center justify-center">
-            <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+      <!-- Danger Zone -->
+      <section class="dashboard-danger-section">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="dashboard-icon bg-rose-500 shadow-rose-200 dark:shadow-rose-500/10">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
           <div>
-            <p class="font-semibold text-slate-900">Password</p>
-            <p class="text-sm text-slate-600">Update your account credentials</p>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Danger Zone</h2>
+            <p class="text-xs font-semibold text-red-500/80 dark:text-rose-400/70">Irreversible actions</p>
           </div>
         </div>
 
-        <% if (success === 'Password reset email sent') { %>
-        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <!-- Success State -->
-          <div class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-green-50 text-green-700 border border-green-200">
-            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <span class="text-sm font-medium">
-              Reset email sent
-            </span>
-          </div>
+        <div class="space-y-3">
+          <form method="POST" action="/signout">
+            <button type="submit" class="w-full text-left cursor-pointer group/btn">
+              <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-[#1a1e28]/60 border border-slate-255 dark:border-slate-700/30 hover:border-slate-300 dark:hover:border-slate-600/40 transition-all duration-300 shadow-xs dark:shadow-black/10">
+                <div class="flex items-start gap-3 min-w-0">
+                  <div class="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-700/30 text-slate-600 dark:text-slate-400 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+                    </svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-900 dark:text-slate-200">Sign out devices</p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-600 truncate mt-0.5">End sessions everywhere.</p>
+                  </div>
+                </div>
+                <svg class="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover/btn:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </button>
+          </form>
 
-          <!-- Resend -->
-          <a href="/account/change-password" class="btn-outline-sky text-xs w-full sm:w-auto sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
-            Resend
+          <a href="/account/delete" class="block group/btn">
+            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-[#1a1e28]/60 border border-rose-100 dark:border-rose-500/15 hover:border-rose-300 dark:hover:border-rose-400/30 transition-all duration-300 shadow-xs dark:shadow-black/10">
+              <div class="flex items-start gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3m-9 0h12" />
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-slate-900 dark:text-slate-200">Delete account</p>
+                  <p class="text-[10px] text-slate-400 dark:text-slate-600 truncate mt-0.5">Permanently remove profile.</p>
+                </div>
+              </div>
+              <svg class="w-4 h-4 text-rose-300 dark:text-rose-500/50 group-hover/btn:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
           </a>
         </div>
-        <% } else { %>
-        <a href="/account/change-password" class="btn-outline-sky text-xs w-full sm:w-auto sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
-          Reset Password
-        </a>
-        <% } %>
-      </div>
+      </section>
 
-      <!-- MFA -->
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200 hover:border-orange-300 transition-colors">
-        <div class="flex items-start sm:items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-linear-to-br <%= user.mfaEnabled ? 'from-green-100 to-green-200' : 'from-sky-100 to-sky-200' %> <%= user.mfaEnabled ? '' : 'sky' %>-200 flex items-center justify-center">
-            <svg class="w-6 h-6 <%= user.mfaEnabled ? 'text-green-600' : 'text-sky-600' %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    </div>
+
+    <!-- Security & Client Column (Right) -->
+    <div class="lg:col-span-2 space-y-8">
+      
+      <!-- Security Settings -->
+      <section class="dashboard-section">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="dashboard-icon">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Security Settings</h2>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-0.5">Configure authentication factors and passwords.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Password Card -->
+          <div class="p-5 rounded-2xl bg-slate-50 dark:bg-[#1a1e28]/50 border border-slate-200/60 dark:border-slate-700/25 shadow-xs dark:shadow-black/10 hover:border-brand-orange/20 dark:hover:border-brand-orange/15 transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                </div>
+                <h3 class="font-bold text-slate-900 dark:text-slate-200 text-sm">Account Password</h3>
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-500 leading-relaxed mb-4">Request a recovery link to update your secure passkey credentials.</p>
+            </div>
+
+            <div class="mt-auto">
+              <% if (success === 'Password reset email sent') { %>
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-green-50 dark:bg-emerald-500/10 text-green-700 dark:text-emerald-400 border border-green-200/60 dark:border-emerald-500/20 text-xs font-semibold">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Reset email sent</span>
+                </div>
+                <a href="/account/change-password" class="btn-outline-sky text-xs py-2 w-full text-center">
+                  Resend Link
+                </a>
+              </div>
+              <% } else { %>
+              <a href="/account/change-password" class="btn-outline-sky text-xs py-2.5 w-full text-center block">
+                Reset Password
+              </a>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- MFA Card -->
+          <div class="p-5 rounded-2xl bg-slate-50 dark:bg-[#1a1e28]/50 border border-slate-200/60 dark:border-slate-700/25 shadow-xs dark:shadow-black/10 hover:border-brand-orange/20 dark:hover:border-brand-orange/15 transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl <%= user.mfaEnabled ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200 dark:bg-slate-700/30 text-slate-500 dark:text-slate-500' %> flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <h3 class="font-bold text-slate-900 dark:text-slate-200 text-sm">Two-Factor (2FA)</h3>
+                </div>
+                <%- include("../../../partials/ui/badge", {
+                  variant: user.mfaEnabled ? "success" : "default",
+                  text: user.mfaEnabled ? "Active" : "Disabled",
+                  size: "sm"
+                }) %>
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-500 leading-relaxed mb-4">Adds an extra layer of protection by requiring a dynamic token upon signing in.</p>
+            </div>
+
+            <div class="mt-auto">
+              <a href="/account/<%= user.mfaEnabled ? 'mfa-disable' : 'mfa-enable' %>" class="<%= user.mfaEnabled ? 'btn-outline-rose' : 'btn-outline-green'%> text-xs py-2.5 w-full text-center block">
+                <%= user.mfaEnabled ? 'Disable 2FA' : 'Enable 2FA'%>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- OAuth Consents Section -->
+      <section class="dashboard-section">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="dashboard-icon bg-sky-500 shadow-sky-200 dark:shadow-sky-500/10">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-
           <div>
-            <p class="text-base font-semibold text-slate-900">Two-Factor Authentication</p>
-
-            <% if (user.mfaEnabled) { %>
-            <span class="inline-flex items-center px-3 py-1 mt-2 text-xs font-medium rounded-full bg-green-100 text-green-700">
-              Enabled
-            </span>
-            <% } else { %>
-            <span class="inline-flex items-center px-3 py-1 mt-2 text-xs font-medium rounded-full bg-slate-100 text-slate-600">
-              Not enabled
-            </span>
-            <% } %>
-
+            <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">OAuth Consents</h2>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-0.5">Authorizations you've granted to external integrations.</p>
           </div>
         </div>
 
-        <a href="/account/<%= user.mfaEnabled ? 'mfa-disable' : 'mfa-enable' %>" class="<%= user.mfaEnabled ? 'btn-outline-rose' : 'btn-outline-sky'%> text-xs w-full sm:w-auto sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4">
-          <%= user.mfaEnabled ? 'Disable' : 'Enable'%>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- OAuth Consents Section -->
-  <section class="dashboard-section">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="dashboard-icon">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      </div>
-
-      <div>
-        <h2 class="text-xl font-bold text-slate-900">OAuth Consents</h2>
-        <p class="text-sm text-slate-600 max-w-55 sm:max-w-md">
-          Applications you’ve authorized. You can revoke access at any time.
-        </p>
-      </div>
-    </div>
-
-    <% if (oauthConsents.length === 0) { %>
-    <div class="text-center py-12 px-4 rounded-xl border-2 border-dashed border-slate-200">
-      <svg class="w-12 h-12 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-      <p class="text-slate-500 font-medium">No OAuth consents yet</p>
-      <p class="text-sm text-slate-400 mt-1">Authorized client applications will appear here</p>
-    </div>
-    <% } else { %>
-    <div class="space-y-3">
-      <% for (const consent of oauthConsents) { %>
-      <div class="p-5 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200 hover:border-orange-300 transition-colors">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div class="flex-1 space-y-2">
-            <div class="flex items-center gap-2">
-              <p class="font-semibold text-slate-900"><%= consent.client.domain %></p>
-              <%- include("../../../partials/ui/badge", {
-                    variant: consent.revokedAt ? "danger" : "info",
-                    text: consent.revokedAt ? "Revoked" : "Active",
-                    size: "sm"
-              }) %>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <% consent.scopes.forEach(scope => { %>
-              <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-200 text-slate-700 text-xs font-medium">
-                <%= scope %>
-              </span>
-              <% }) %>
-            </div>
-            <% if (consent.revokedAt) { %>
-            <p class="text-xs text-slate-500">
-              Revoked on <%= consent.revokedAt.toLocaleDateString() %>
-            </p>
-            <% } else { %>
-            <p class="text-xs text-slate-500">
-              Issued on <%= consent.date.toLocaleDateString() %>
-            </p>
-            <% } %>
-          </div>
-          <% if (consent.revokedAt) { %>
-          <a href="/account/reissue-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" class="btn-outline-sky">
-            Reissue
-          </a>
-          <% } else { %>
-          <a href="/account/revoke-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" class="btn-outline-gray">
-            Revoke
-          </a>
-          <% } %>
-        </div>
-      </div>
-      <% } %>
-    </div>
-    <% } %>
-  </section>
-
-  <!-- Client Section -->
-  <section class="dashboard-section">
-
-    <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between mb-8">
-
-      <!-- Left Section -->
-      <div class="flex items-start gap-3 sm:gap-4">
-
-        <!-- Icon -->
-        <div class="dashboard-icon bg-slate-900 p-2 rounded-xl shrink-0">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+        <% if (oauthConsents.length === 0) { %>
+        <div class="text-center py-10 px-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700/30 bg-slate-50/20 dark:bg-[#1a1e28]/30">
+          <svg class="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
+          <p class="text-slate-550 dark:text-slate-400 font-bold text-sm">No authorized applications</p>
+          <p class="text-xs text-slate-400 dark:text-slate-600 mt-0.5">Integrations authorized with Pramaan will be shown here.</p>
         </div>
-
-        <!-- Text Content -->
-        <div class="min-w-0">
-
-          <!-- Title + Badge -->
-          <div class="flex flex-wrap items-center gap-2">
-            <h2 class="text-lg sm:text-xl font-bold text-slate-900">
-              Registered Clients
-            </h2>
-
-            <%- include("../../../partials/ui/badge", {
-              variant: "warning",
-              text: "Developer Section",
-              size: "sm"
-        }) %>
-          </div>
-
-          <!-- Description -->
-          <p class="text-sm text-slate-600 mt-2 max-w-md">
-            Client applications you’ve registered that use Pramaan for authentication.
-          </p>
-        </div>
-      </div>
-
-      <!-- Right: Action Button -->
-      <% if (clients.length !== 0) { %>
-      <a href="/create-client" class="btn-orange py-3 w-full sm:w-auto text-center">
-        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Create OAuth Client
-      </a>
-      <% } %>
-
-    </div>
-
-    <% if (clients.length === 0) { %>
-    <div class="text-center py-16 px-4 rounded-xl border-2 border-dashed border-slate-200">
-      <div class="w-16 h-16 rounded-full bg-brand-orangeDark flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-      </div>
-      <p class="text-slate-700 font-semibold mb-1">No clients yet</p>
-      <p class="text-sm text-slate-500 mb-6">Create your first OAuth client to get started</p>
-      <a href="/create-client" class="btn-orange">
-        Create Client
-      </a>
-    </div>
-    <% } else { %>
-    <div class="space-y-3">
-      <% for (const client of clients) { %>
-      <div class="group p-5 rounded-xl bg-linear-to-br from-slate-50 to-white border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div class="flex-1 space-y-3">
-            <div class="flex flex-wrap items-center gap-3">
-              <h3 class="font-bold text-slate-900 text-lg"><%= client.name %></h3>
-              <%- include("../../../partials/ui/badge", {
-                    variant: client.isActive ? "success" : "default",
-                    text: client.isActive ? "Active" : "Inactive",
+        <% } else { %>
+        <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
+          <% for (const consent of oauthConsents) { %>
+          <div class="p-5 rounded-2xl bg-slate-50 dark:bg-[#1a1e28]/50 border border-slate-200/60 dark:border-slate-700/25 shadow-xs dark:shadow-black/10 hover:border-brand-orange/20 dark:hover:border-brand-orange/15 transition-all duration-300">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="space-y-2 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="font-bold text-slate-800 dark:text-slate-200 truncate"><%= consent.client.domain %></p>
+                  <%- include("../../../partials/ui/badge", {
+                    variant: consent.revokedAt ? "danger" : "success",
+                    text: consent.revokedAt ? "Revoked" : "Authorized",
                     size: "sm"
                   }) %>
-            </div>
+                </div>
+                
+                <div class="flex flex-wrap gap-1.5">
+                  <% consent.scopes.forEach(scope => { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-white dark:bg-[#151820]/60 border border-slate-200 dark:border-slate-700/30 text-slate-600 dark:text-slate-400 text-[10px] font-bold">
+                    <%= scope %>
+                  </span>
+                  <% }) %>
+                </div>
 
-            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-              <span class="text-sm font-medium text-slate-600">Client ID:</span>
-              <div class="flex items-center gap-2 flex-1 min-w-0">
-                <code class="text-xs font-mono text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg flex-1 truncate">
-                  <%= client.id %>
-                </code>
-                <button type="button" class="copy-btn p-2 hover:bg-slate-200 rounded-lg transition-colors group/btn" data-copy-text="<%= client.id %>" title="Copy Client ID">
-                  <span class="copy-btn-label text-xs font-medium text-slate-600 group-hover/btn:text-slate-900">Copy</span>
-                </button>
+                <p class="text-[10px] font-semibold text-slate-450 dark:text-slate-600">
+                  <%= consent.revokedAt ? 'Revoked' : 'Issued' %> on <%= new Date(consent.revokedAt || consent.date).toLocaleDateString() %>
+                </p>
+              </div>
+
+              <div class="shrink-0 sm:self-center">
+                <% if (consent.revokedAt) { %>
+                <a href="/account/reissue-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" class="btn-outline-sky text-xs py-2 px-4 block text-center">
+                  Reissue
+                </a>
+                <% } else { %>
+                <a href="/account/revoke-consent?clientId=<%= encodeURIComponent(consent.client.id) %>&clientDomain=<%= encodeURIComponent(consent.client.domain) %>" class="btn-outline-gray text-xs py-2 px-4 block text-center">
+                  Revoke
+                </a>
+                <% } %>
               </div>
             </div>
           </div>
-
-          <a href="/client/<%= client.id %>" class="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:border-sky-500 hover:text-sky-600 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-            View Details
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
+          <% } %>
         </div>
-      </div>
-      <% } %>
-    </div>
-    <% } %>
-  </section>
+        <% } %>
+      </section>
 
-  <!-- Danger Zone -->
-  <section class="dashboard-danger-section">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="dashboard-icon">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      </div>
-      <div>
-        <h2 class="text-xl font-bold text-slate-900">Danger Zone</h2>
-        <p class="text-sm text-slate-600">Irreversible actions</p>
-      </div>
-    </div>
-
-    <div class="space-y-4">
-      <form method="POST" action="/signout" class="group">
-        <button type="submit" class="w-full text-left cursor-pointer">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-white/80 border border-slate-200 hover:border-slate-300 transition">
-            <div class="flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
-                </svg>
-              </div>
-              <div>
-                <p class="text-sm font-semibold text-slate-900">Sign out from all devices</p>
-                <p class="text-xs text-slate-500 mt-1">Ends all active sessions linked to your account.</p>
-              </div>
-            </div>
-          </div>
-        </button>
-      </form>
-
-      <a href="/account/delete" class="block">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-white/80 border border-rose-200 hover:border-rose-300 transition">
+      <!-- Client Registry Section -->
+      <section class="dashboard-section">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div class="flex items-start gap-3">
-            <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3m-9 0h12" />
+            <div class="dashboard-icon bg-slate-900 dark:bg-slate-200 shadow-slate-200 dark:shadow-slate-200/10 shrink-0">
+              <svg class="w-5 h-5 text-white dark:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
             </div>
             <div>
-              <p class="text-sm font-semibold text-slate-900">Delete account</p>
-              <p class="text-xs text-slate-500 mt-1">Permanently remove your account and all data.</p>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Developer Clients</h2>
+                <%- include("../../../partials/ui/badge", {
+                  variant: "warning",
+                  text: "Developer Section",
+                  size: "sm"
+                }) %>
+              </div>
+              <p class="text-xs font-semibold text-slate-450 dark:text-slate-500 mt-0.5">Manage OAuth credentials for custom application integrations.</p>
             </div>
           </div>
+
+          <% if (clients.length !== 0) { %>
+          <a href="/create-client" class="btn-orange !py-2.5 !px-4 !text-xs shrink-0 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Register Client</span>
+          </a>
+          <% } %>
         </div>
-      </a>
+
+        <% if (clients.length === 0) { %>
+        <div class="text-center py-12 px-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700/30 bg-slate-50/20 dark:bg-[#1a1e28]/30">
+          <div class="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-brand-orange/10 text-brand-orange flex items-center justify-center mx-auto mb-3 shadow-xs">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <p class="text-slate-700 dark:text-slate-300 font-bold text-sm">No clients registered</p>
+          <p class="text-xs text-slate-500 dark:text-slate-600 mb-5">Create your first OAuth app integration client payload.</p>
+          <a href="/create-client" class="btn-orange !py-2.5 !px-5 !text-xs">
+            Create Client
+          </a>
+        </div>
+        <% } else { %>
+        <div class="space-y-3">
+          <% for (const client of clients) { %>
+          <div class="group p-5 rounded-2xl bg-slate-50 dark:bg-[#1a1e28]/50 border border-slate-200/60 dark:border-slate-700/25 hover:border-brand-orange/20 dark:hover:border-brand-orange/15 hover:bg-white dark:hover:bg-[#1a1e28]/80 hover:shadow-lg dark:hover:shadow-black/20 transition-all duration-300">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="space-y-3 flex-1 min-w-0">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <h3 class="font-extrabold text-slate-900 dark:text-slate-100 text-base truncate"><%= client.name %></h3>
+                  <%- include("../../../partials/ui/badge", {
+                    variant: client.isActive ? "success" : "default",
+                    text: client.isActive ? "Active" : "Disabled",
+                    size: "sm"
+                  }) %>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-semibold text-slate-500 dark:text-slate-500 shrink-0">Client ID:</span>
+                  <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                    <code class="text-xs font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-[#151820]/60 border border-slate-200 dark:border-slate-700/30 px-3 py-1.5 rounded-xl truncate flex-1 block">
+                      <%= client.id %>
+                    </code>
+                    <button type="button" class="copy-btn py-1.5 px-3 bg-white dark:bg-[#151820]/60 border border-slate-200 dark:border-slate-700/30 hover:border-slate-300 dark:hover:border-slate-600/40 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 transition cursor-pointer" data-copy-text="<%= client.id %>" title="Copy Client ID">
+                      <span>Copy</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="shrink-0 self-start sm:self-center">
+                <a href="/client/<%= client.id %>" class="btn-outline-sky text-xs py-2 px-4 block text-center">
+                  Manage Settings
+                </a>
+              </div>
+            </div>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
+      </section>
+
     </div>
-  </section>
+  </div>
 
 </div>
 

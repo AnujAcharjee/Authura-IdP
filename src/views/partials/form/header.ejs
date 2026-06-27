@@ -5,14 +5,14 @@
   <div class="relative inline-block">
     <div class="absolute inset-0 blur-3xl bg-orange-400 opacity-40"></div>
 
-    <h1 class="relative font-brand-hero text-3xl font-semibold tracking-tight text-slate-900">
+    <h1 class="relative font-brand-hero text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
       <%= title ? title : null %>
     </h1>
   </div>
 
   <!-- Subtitle -->
   <% if (typeof subtitle !== 'undefined' && subtitle) { %>
-  <p class="text-sm ml-1 text-slate-600 max-w-md leading-relaxed">
+  <p class="text-sm ml-1 text-slate-600 dark:text-slate-400 max-w-md leading-relaxed">
     <%= subtitle %>
   </p>
   <% } %>

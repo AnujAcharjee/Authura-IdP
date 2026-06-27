@@ -1,45 +1,45 @@
 <% layout("layouts/main") %>
 
-<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 bg-transparent">
-  <div class="w-full max-w-lg text-center">
+<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 bg-transparent relative z-10 animate-slideIn">
+  <div class="w-full max-w-lg text-center glass-card p-8 sm:p-12">
 
     <!-- Illustration -->
-    <div class="flex justify-center mb-8">
-      <img src="/images/404 Error.svg" alt="404 illustration" class="w-64 sm:w-80 h-auto">
+    <div class="flex justify-center mb-8 hover-scale">
+      <img src="/images/404 Error.svg" alt="404 illustration" class="w-64 sm:w-80 h-auto drop-shadow-md">
     </div>
 
     <!-- Heading -->
-    <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4 tracking-tight">
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight font-brand-hero">
       Page not found
     </h1>
 
     <!-- Message -->
     <% if (typeof message !== "undefined" && message) { %>
-    <p class="text-slate-600 mb-8 text-lg">
+    <p class="text-slate-500 mb-8 font-semibold">
       <%= message %>
     </p>
     <% } else { %>
-    <p class="text-slate-600 mb-8 text-lg">
+    <p class="text-slate-500 mb-8 font-semibold">
       The page you’re looking for doesn’t exist or may have been moved.
     </p>
     <% } %>
 
     <!-- Actions -->
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
 
-      <a href="/account" class="px-6 py-3 btn-sky">
+      <a href="/account" class="btn-sky text-sm shadow-lg shadow-sky-500/10">
         Go to Dashboard
       </a>
 
-      <a href="/" class="px-6 py-3 btn-orange">
+      <a href="/" class="btn-orange text-sm shadow-lg shadow-brand-orange/10">
         Go to Landing
       </a>
 
     </div>
 
     <!-- Divider -->
-    <div class="mt-12 pt-8 border-t border-slate-200">
-      <p class="text-sm text-slate-500">
+    <div class="mt-12 pt-8 border-t border-slate-200/40">
+      <p class="text-xs text-slate-400 font-semibold">
         If you believe this is an error, please contact support.
       </p>
     </div>

@@ -1,52 +1,80 @@
-<header class="sticky top-0 z-50 bg-white/60 backdrop-blur-md">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-0">
+<header class="sticky top-0 z-50 bg-white/70 dark:bg-[#09090b]/80 backdrop-blur-xl border-b border-slate-200/40 dark:border-slate-800/40 transition-colors duration-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
     <div class="flex items-center justify-between">
 
       <!-- Logo -->
-      <a href="/" class="flex items-center">
+      <a href="/" class="flex items-center hover:opacity-90 transition-opacity">
         <%- include("../icons/horizontal-logo") %>
       </a>
 
       <!-- Desktop Nav -->
-      <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-600">
-        <a href="#how-it-works" class="hover:text-brand-orange transition">How it works</a>
-        <a href="#oauth-flow" class="hover:text-brand-orange transition">OAuth 2.0 flow</a>
-        <a href="#features" class="hover:text-brand-orange transition">Why Pramaan</a>
-        <a href="<%= docUrl %>" class="hover:text-brand-orange transition">Docs</a>
+      <nav class="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-slate-350">
+        <a href="#how-it-works" class="hover:text-brand-orange dark:hover:text-brand-orange transition-colors duration-300">How it works</a>
+        <a href="#oauth-flow" class="hover:text-brand-orange dark:hover:text-brand-orange transition-colors duration-300">OAuth 2.0 flow</a>
+        <a href="#features" class="hover:text-brand-orange dark:hover:text-brand-orange transition-colors duration-300">Why Pramaan</a>
+        <a href="<%= docUrl %>" class="hover:text-brand-orange dark:hover:text-brand-orange transition-colors duration-300">Docs</a>
       </nav>
 
       <!-- Desktop Auth Buttons -->
-      <div class="hidden lg:flex items-center gap-3">
-        <a href="/signin" class="text-sm font-medium px-4 py-2 rounded-lg text-slate-600 hover:text-brand-orange transition">
+      <div class="hidden lg:flex items-center gap-4">
+        <!-- Theme Toggle Button -->
+        <button id="themeToggle" class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer" aria-label="Toggle dark mode">
+          <!-- Sun Icon (visible in dark mode) -->
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+          </svg>
+          <!-- Moon Icon (visible in light mode) -->
+          <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+
+        <a href="/signin" class="text-sm font-semibold px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-350 hover:text-brand-orange dark:hover:text-brand-orange transition-all duration-300">
           Sign in
         </a>
-        <a href="/signup" class="px-5 py-2.5 text-sm btn-orange">
+        <a href="/signup" class="btn-orange !px-5 !py-2.5 !text-sm">
           Get Started
         </a>
       </div>
 
-      <!-- Mobile Hamburger -->
-      <button id="menuBtn" class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-700 hover:bg-slate-100 transition">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+      <!-- Mobile Controls -->
+      <div class="flex items-center gap-2 lg:hidden">
+        <!-- Theme Toggle Mobile -->
+        <button id="themeToggleMobile" class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer" aria-label="Toggle dark mode">
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+          </svg>
+          <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+
+        <!-- Mobile Hamburger -->
+        <button id="menuBtn" class="inline-flex items-center justify-center p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
 
     </div>
   </div>
 
   <!-- Mobile Menu -->
-  <div id="mobileMenu" class="hidden lg:hidden bg-transparent mt-2 backdrop-blur-xs">
-    <div class="p-3 mx-2 roundedd-xl flex flex-col gap-1 text-sm font-medium text-slate-700">
+  <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-100 dark:border-slate-800/40 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl">
+    <div class="p-4 mx-2 rounded-2xl flex flex-col gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-inner">
 
-      <a href="#how-it-works" class="hover:text-brand-orange font-mono transition">How it works</a>
-      <a href="#oauth-flow" class="hover:text-brand-orange font-mono transition">OAuth 2.0 flow</a>
-      <a href="#features" class="hover:text-brand-orange font-mono transition">Why Pramaan</a>
-      <a href="<%= docUrl %>" class="hover:text-brand-orange font-mono transition">Docs</a>
+      <a href="#how-it-works" class="px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-brand-orange dark:hover:text-brand-orange transition-all">How it works</a>
+      <a href="#oauth-flow" class="px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-brand-orange dark:hover:text-brand-orange transition-all">OAuth 2.0 flow</a>
+      <a href="#features" class="px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-brand-orange dark:hover:text-brand-orange transition-all">Why Pramaan</a>
+      <a href="<%= docUrl %>" class="px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-brand-orange dark:hover:text-brand-orange transition-all">Docs</a>
 
-      <div class="pt-2 flex flex-col gap-3">
-        <a href="/signin" class="px-4 py-2 btn-orange">
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-3">
+        <a href="/signin" class="block text-center px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
           Sign in
+        </a>
+        <a href="/signup" class="block text-center px-4 py-2.5 rounded-xl bg-linear-to-r from-brand-orange to-brand-orangeDark text-white font-bold shadow-md hover:shadow-lg transition-all duration-300">
+          Get Started
         </a>
       </div>
 
