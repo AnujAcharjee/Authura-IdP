@@ -109,6 +109,11 @@ jobs:
             KEY_ENC_SECRET=${{ secrets.KEY_ENC_SECRET }}
             INIT_ADMIN_EMAIL=${{ secrets.INIT_ADMIN_EMAIL }}
             LOGTAIL_SOURCE_TOKEN=${{ secrets.LOGTAIL_SOURCE_TOKEN }}
+
+            CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+            CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+            CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+            
             EOF
 
             docker compose --project-name pramaan pull

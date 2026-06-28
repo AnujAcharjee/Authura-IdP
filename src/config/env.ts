@@ -62,6 +62,11 @@ const envSchema = z
       error: 'NEON_PG_DATABASE_URL is required',
     }),
 
+    /* ---------------- Cloudinary ---------------- */
+    CLOUDINARY_CLOUD_NAME: z.string().optional(),
+    CLOUDINARY_API_KEY: z.string().optional(),
+    CLOUDINARY_API_SECRET: z.string().optional(),
+
     /* ---------------- Redis ---------------- */
     // REDIS_HOST: isDev ? z.string({ error: 'REDIS_HOST is required' }) : z.string().optional(),
     // REDIS_USERNAME: isDev ? z.string({ error: 'REDIS_USERNAME is required' }) : z.string().optional(),

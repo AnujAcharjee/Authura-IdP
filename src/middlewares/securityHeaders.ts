@@ -16,7 +16,7 @@ export const setupSecurityHeaders = (app: Express) => {
 
           scriptSrc: ["'self'"], // prevent remote script injection
           styleSrc: ["'self'", "'unsafe-inline'"], // required for SSR auth pages
-          imgSrc: ["'self'", 'data:', 'https:'], // allow avatars, logos, QR codes
+          imgSrc: ["'self'", 'data:', 'https:', 'blob:'], // allow avatars, logos, QR codes, and local blob previews
           fontSrc: ["'self'", 'https:', 'data:'], // allow embedded web fonts
 
           connectSrc: ["'self'", 'https:'], // restrict XHR / fetch / OAuth calls

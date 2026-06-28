@@ -4,6 +4,8 @@ import { SERVER_URL } from '../utils/constant.js';
 import type { Request } from 'express';
 import type { AuthService } from '../services/auth.service.js';
 import type { SessionService } from '../services/session.service.js';
+import { cloudinary } from '../config/cloudinary.js';
+import streamifier from 'streamifier';
 import type { AccountView, AccountService } from '../services/account.service.js';
 import type { AllClientsView, ClientService } from '../services/client.service.js';
 import type { OAuthConsentView, OAuthService } from '../services/oauth.service.js';
@@ -46,9 +48,40 @@ export class AccountController extends BaseController {
   });
 
   updateProfile = this.handleViewRequest(async (req, res) => {
+    let avatarUrl = req.body.updates?.avatar;
+    const user = await this.accountService.get(req.user.id);
+
+    if (req.file) {
+      try {
+        // Upload image to Cloudinary using streamifier
+        avatarUrl = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: 'pramaan_avatars' },
+            (error, result) => {
+              if (result) resolve(result.secure_url);
+              else reject(error);
+            }
+          );
+          streamifier.createReadStream(req.file!.buffer).pipe(stream);
+        });
+      } catch (error: any) {
+        console.error('Cloudinary upload error details:', error);
+        return res.redirect(303, `/account?error=${encodeURIComponent('Avatar upload failed. Please check Cloudinary configuration.')}`);
+      }
+    }
+
+    if (!avatarUrl && !user.avatar) {
+      // Assign default fallback image if not provided
+      avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
+    }
+
+    if (avatarUrl) {
+      req.body.updates = { ...req.body.updates, avatar: avatarUrl };
+    }
+
     await this.accountService.update(req.user.id, req.body.updates);
 
-    return res.redirect(303, `/account`);
+    return res.redirect(303, `/account?success=${encodeURIComponent('Profile updated successfully')}`);
   });
 
   changePassword = this.handleViewRequest(async (req, res) => {

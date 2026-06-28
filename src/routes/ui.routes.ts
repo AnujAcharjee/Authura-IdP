@@ -15,6 +15,7 @@ import { clientService } from '../services/client.service.js';
 import { ClientController } from '../controllers/client.controller.js';
 import { LandingController } from '../controllers/landing.controller.js';
 import { emailVerificationLimiter } from '../middlewares/rateLimiter.js';
+import { upload } from '../middlewares/upload.js';
 
 const router = Router();
 const landingController = new LandingController();
@@ -65,6 +66,12 @@ router
   .put(
     Authentication.ssr('default'),
     Authorize.role([ROLES.USER]),
+    upload.single('avatar'),
+    (req, res, next) => {
+      // Map multipart form fields to expected nested structure for Zod validation
+      req.body = { updates: { ...req.body } };
+      next();
+    },
     validateRequest(AccountZSchema.updateProfileSchema),
     accountController.updateProfile,
   )
