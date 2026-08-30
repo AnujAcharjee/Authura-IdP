@@ -89,8 +89,8 @@ const envSchema = z
     //     z.string().min(1, 'SMTP_FROM cannot be empty').optional()
     //   : z.string().min(1, 'SMTP_FROM cannot be empty'),
 
-    /* ---------------- MailSender API ---------------- */
-    MAILERSEND_API_KEY: z.string({ error: 'MAILSENDER_API_KEY is required' }).min(1, 'MAILSENDER_API_KEY cannot be empty'),
+    /* ---------------- Resend API ---------------- */
+    RESEND_API_KEY: z.string({ error: 'RESEND_API_KEY is required' }).min(1, 'RESEND_API_KEY cannot be empty'),
     EMAIL_FROM: z.string({ error: 'EMAIL_FROM is required' }).email('EMAIL_FROM must be a valid email address'),
 
     /* ---------------- Auth Expiries (seconds) ---------------- */

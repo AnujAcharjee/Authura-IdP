@@ -83,7 +83,7 @@ jobs:
 
             REDIS_URL=${{ secrets.REDIS_URL }}
 
-            MAILERSEND_API_KEY=${{ secrets.MAILERSEND_API_KEY }}
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
             EMAIL_FROM=${{ secrets.EMAIL_FROM }}
 
             AUTH_ISSUER=${{ secrets.AUTH_ISSUER }}

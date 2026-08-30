@@ -45,6 +45,7 @@ export enum ErrorCode {
 
   EMAIL_ALREADY_EXISTS = 'ERR_4006',
   INVALID_USER = 'ERR_4007',
+  EMAIL_BOUNCED = 'ERR_4008',
 
   // Database Errors (5xxx) - 500 , 503
   DB_ERROR = 'ERR_5001',

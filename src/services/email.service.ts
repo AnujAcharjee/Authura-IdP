@@ -1,4 +1,4 @@
-import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend';
+import { Resend } from 'resend';
 import { SERVER_URL } from '../utils/constant.js';
 import { ENV } from '../config/env.js';
 import { logger } from '../config/logger.js';
@@ -19,21 +19,31 @@ interface SendEmailOptions {
   text: string;
 }
 
-type MailerSendError = {
+// Resend error shape from the SDK
+interface ResendErrorResponse {
   statusCode?: number;
-  body?: {
-    message?: string;
-    errors?: Record<string, unknown>;
-  };
-};
+  message?: string;
+  name?: string;
+}
+
+// -----------------------
+// BOUNCE REDIS KEYS
+// -----------------------
+// Tracks hard-bounced emails for 30 days so we never re-send to them.
+// Tracks soft-bounce counts; after 3 soft bounces within a window we treat it as hard.
+const BOUNCE_KEY_PREFIX = 'email:bounce:';
+const SOFT_BOUNCE_KEY_PREFIX = 'email:softbounce:';
+const HARD_BOUNCE_TTL = 30 * 24 * 60 * 60; // 30 days
+const SOFT_BOUNCE_TTL = 24 * 60 * 60;       // 24-hour window for counting
+const MAX_SOFT_BOUNCES = 3;
 
 class EmailService {
-  private mailer!: MailerSend;
+  private resend!: Resend;
   private readonly fromAddress: string;
   private initialized = false;
 
   constructor() {
-    logger.info('Using MailerSend API', {
+    logger.info('Using Resend API', {
       context: 'EmailService.constructor',
     });
 
@@ -44,11 +54,9 @@ class EmailService {
   async init() {
     if (this.initialized) return;
 
-    this.mailer = new MailerSend({
-      apiKey: ENV.MAILERSEND_API_KEY,
-    });
+    this.resend = new Resend(ENV.RESEND_API_KEY);
 
-    logger.info('MailerSend initialized');
+    logger.info('Resend initialized');
     this.initialized = true;
   }
 
@@ -83,15 +91,128 @@ class EmailService {
     await redis.set(redisKey, '1', 'EX', limitSeconds);
   }
 
-  private normalizeMailerSendError(error: unknown): AppError {
-    const mailerError = error as MailerSendError;
-    const statusCode = mailerError?.statusCode;
+  // -----------------------
+  // BOUNCE MANAGEMENT
+  // -----------------------
 
-    logger.error('MailerSend email delivery failed', {
+  /**
+   * Check if an email is hard-bounced (blocked from sending).
+   */
+  private async isHardBounced(email: string): Promise<boolean> {
+    const key = `${BOUNCE_KEY_PREFIX}${email.toLowerCase()}`;
+    const exists = await redis.exists(key);
+    return exists === 1;
+  }
+
+  /**
+   * Mark an email as hard-bounced. No emails will be sent to this
+   * address for the TTL duration (30 days).
+   */
+  private async markHardBounce(email: string): Promise<void> {
+    const key = `${BOUNCE_KEY_PREFIX}${email.toLowerCase()}`;
+    await redis.set(key, Date.now().toString(), 'EX', HARD_BOUNCE_TTL);
+
+    logger.warn('Email hard-bounced and blocked', { email });
+  }
+
+  /**
+   * Record a soft bounce. After MAX_SOFT_BOUNCES within the window
+   * the address is promoted to a hard bounce.
+   */
+  private async recordSoftBounce(email: string): Promise<void> {
+    const key = `${SOFT_BOUNCE_KEY_PREFIX}${email.toLowerCase()}`;
+
+    const count = await redis.incr(key);
+
+    // Set expiry only on first increment
+    if (count === 1) {
+      await redis.expire(key, SOFT_BOUNCE_TTL);
+    }
+
+    logger.warn('Email soft-bounced', { email, count });
+
+    if (count >= MAX_SOFT_BOUNCES) {
+      await this.markHardBounce(email);
+      await redis.del(key); // clean up soft-bounce counter
+    }
+  }
+
+  /**
+   * Guard: throws if the recipient has previously bounced.
+   */
+  private async checkBounceStatus(email: string): Promise<void> {
+    if (await this.isHardBounced(email)) {
+      throw new AppError(
+        'This email address is not reachable. Please use a different email.',
+        422,
+        ErrorCode.EMAIL_BOUNCED,
+      );
+    }
+  }
+
+  /**
+   * Inspect a Resend error and record bounces when applicable.
+   * Returns true if the error was a bounce (so the caller can skip retries).
+   */
+  private async handleBounceFromError(email: string, error: unknown): Promise<boolean> {
+    const resendError = error as ResendErrorResponse;
+    const msg = (resendError?.message ?? '').toLowerCase();
+    const name = (resendError?.name ?? '').toLowerCase();
+
+    // Hard bounce indicators
+    const isHardBounce =
+      msg.includes('bounced') ||
+      msg.includes('rejected') ||
+      msg.includes('mailbox not found') ||
+      msg.includes('does not exist') ||
+      msg.includes('invalid recipient') ||
+      msg.includes('user unknown') ||
+      name === 'validation_error';
+
+    if (isHardBounce) {
+      await this.markHardBounce(email);
+      return true;
+    }
+
+    // Soft bounce indicators (temporary failures)
+    const isSoftBounce =
+      msg.includes('temporarily rejected') ||
+      msg.includes('mailbox full') ||
+      msg.includes('try again later') ||
+      msg.includes('rate limit') ||
+      msg.includes('temporarily deferred');
+
+    if (isSoftBounce) {
+      await this.recordSoftBounce(email);
+      return true;
+    }
+
+    return false;
+  }
+
+  // -----------------------
+  // ERROR HANDLING
+  // -----------------------
+
+  private normalizeResendError(email: string, error: unknown, isBounce: boolean): AppError {
+    const resendError = error as ResendErrorResponse;
+    const statusCode = resendError?.statusCode;
+
+    logger.error('Resend email delivery failed', {
       statusCode,
-      body: mailerError?.body,
+      message: resendError?.message,
+      email,
+      isBounce,
       error,
     });
+
+    if (isBounce) {
+      return new AppError(
+        'This email address is not reachable. Please use a different email.',
+        422,
+        ErrorCode.EMAIL_BOUNCED,
+      );
+    }
 
     if (statusCode && statusCode >= 400 && statusCode < 500) {
       return new AppError(
@@ -108,30 +229,52 @@ class EmailService {
     );
   }
 
+  // -----------------------
+  // SEND WITH RETRY
+  // -----------------------
+
   private async sendWithRetry(options: SendEmailOptions, retries = 3) {
-    let lastError;
+    // Pre-flight: reject if already bounced
+    await this.checkBounceStatus(options.to);
+
+    let lastError: unknown;
+    let wasBounce = false;
 
     for (let i = 0; i < retries; i++) {
       try {
-        const sentFrom = new Sender(this.fromAddress, 'Pramaan');
-        const recipients = [new Recipient(options.to)];
+        const { data, error } = await this.resend.emails.send({
+          from: `Pramaan <${this.fromAddress}>`,
+          to: [options.to],
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+        });
 
-        const emailParams = new EmailParams()
-          .setFrom(sentFrom)
-          .setTo(recipients)
-          .setSubject(options.subject)
-          .setHtml(options.html)
-          .setText(options.text);
+        if (error) {
+          throw error;
+        }
 
-        return await this.mailer.email.send(emailParams);
+        return data;
       } catch (err) {
         lastError = err;
+
+        // Check if this is a bounce — if so, don't retry
+        const bounced = await this.handleBounceFromError(options.to, err);
+        if (bounced) {
+          wasBounce = true;
+          break;
+        }
+
         await new Promise((res) => setTimeout(res, 500 * (i + 1)));
       }
     }
 
-    throw this.normalizeMailerSendError(lastError);
+    throw this.normalizeResendError(options.to, lastError, wasBounce);
   }
+
+  // -----------------------
+  // HELPERS
+  // -----------------------
 
   private buildUrl(path: string, token: string, flow: AuthenticationFlow, requestId?: string) {
     const url = new URL(`${SERVER_URL}${path}`);
@@ -144,6 +287,10 @@ class EmailService {
 
     return url.toString();
   }
+
+  // -----------------------
+  // PUBLIC API
+  // -----------------------
 
   async sendVerificationEmail(
     to: string,
